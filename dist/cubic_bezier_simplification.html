@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <script>
+            window.onload = function() {
+                const appScript = document.createElement('script');
+                appScript.defer = true;
+                appScript.async = true;
+                appScript.src = "cubic_bezier_simplification.js";
+                document.head.appendChild(appScript);
+            };
+        </script>
+    </head>
+    <body>
+        <h2>Triangulation - Cubic beziers</h2>
+        
+        <p>Convert cubic beziers into lines, keep subdividing until we reach a point where the angle between split lines is small</p>
+
+        <canvas width="800" height="600" id="game" style="border: 1px solid black"></canvas>
+    </body>
+</html>

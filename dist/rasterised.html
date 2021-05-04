@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script>
+      window.onload = function() {
+          const appScript = document.createElement('script');
+          appScript.defer = true;
+          appScript.async = true;
+          appScript.src = "rasterised.js";
+          document.head.appendChild(appScript);
+      };
+  </script>
+  </head>
+  <body>
+    <p>Antialiasing of a triangle via conservative rasterisation and analytical area computation</p>
+
+    <canvas id="game" width="800" height="600" style="border: 1px solid black;"></canvas>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebGL Conservative Rasterisation</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="shrink-to-fit=no, width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1" />
+
+        <style>
+            #demo {
+                position: relative;
+                width: 1000px;
+                height: 1000px;
+            }
+
+            #canvas1 {
+                image-rendering: optimizeSpeed;
+                image-rendering: -moz-crisp-edges;
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: -o-crisp-edges;
+                image-rendering: pixelated;
+                -ms-interpolation-mode: nearest-neighbor;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        </style>
+        <script>
+            window.onload = function() {
+                const appScript = document.createElement('script');
+                appScript.defer = true;
+                appScript.async = true;
+                appScript.src = "custom_font_webgl.js";
+                document.head.appendChild(appScript);
+            };
+        </script>
+    </head>
+   <body>
+       <h2>WebGL Font Rendering</h2>
+       <div id="demo">
+           <canvas width="1000" height="1000" id="canvas1"></canvas>
+       </div>
+    </body>
+</html>

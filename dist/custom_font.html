@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <style>
+            @font-face {
+                font-family: 'Timeless-Normal';
+                src: url('../media/Timeless.ttf');
+            }
+
+            .render_test {
+                display: inline-block;
+                vertical-align: top;
+            }
+
+            .stuff {
+                display: flex;
+            }
+
+            #zoomInput {
+                width: 20px;
+                -webkit-appearance: slider-vertical;
+                writing-mode: bt-lr;
+                transform: scaleY(-1);
+                margin-top: 50px;
+            }
+
+            .translation,
+            .rotation {
+                width: 600px;
+            }
+        </style>
+
+        <script>
+            window.onload = function() {
+                const appScript = document.createElement('script');
+                appScript.defer = true;
+                appScript.async = true;
+                appScript.src = "custom_font.js";
+                document.head.appendChild(appScript);
+            };
+        </script>
+    </head>
+    <body>
+        <h2>Custom font rendering</h2>
+
+        <div>Text: <input type="text" id="textString" value="Demo!" /></div>
+        
+        <h3>Translate:</h3>
+        <label>x: <input type="range" class="translation" id="xPosition" min="0" max="200" value="0" step="0.1" /></label>
+        <label>y: <input type="range" class="translation" id="yPosition" min="0" max="200" value="0" step="0.1" /></label>
+
+        <div class="stuff">
+            <div class="render_test">
+                <p>Custom rendering</p>
+                <canvas width="600" height="900" id="game" style="border: 1px solid black;"></canvas>
+            </div>
+
+            <input type="range" orient="vertical" id="zoomInput" min="0.01" max="10" step="0.01" value="1" />
+
+            <div class="render_test">
+                <p>CPU 2D canvas rendering (Browser Rendered)</p>
+                <canvas width="600" height="900" id="game2" style="border: 1px solid black;"></canvas>
+            </div>
+        </div>
+    </body>
+</html>

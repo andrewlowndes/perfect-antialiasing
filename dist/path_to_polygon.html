@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <style>
+            #svgPreview {
+                display: inline-block;
+                vertical-align: top;
+            }
+        </style>
+
+        <script>
+            window.onload = function() {
+                const appScript = document.createElement('script');
+                appScript.defer = true;
+                appScript.async = true;
+                appScript.src = "path_to_polygon.js";
+                document.head.appendChild(appScript);
+            };
+        </script>
+    </head>
+    <body>
+        <h1>Convert paths to polygons</h2>
+
+        <p>Select char: <select id="charSelect"><option selected disabled>Loading</option></select></p>
+
+        <canvas width="600" height="900" id="game" style="border: 1px solid black"></canvas>
+
+        <div id="svgPreview"></div>
+    </body>
+</html>

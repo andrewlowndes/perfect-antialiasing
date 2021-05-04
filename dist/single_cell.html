@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script>
+      window.onload = function() {
+          const appScript = document.createElement('script');
+          appScript.defer = true;
+          appScript.async = true;
+          appScript.src = "single_cell.js";
+          document.head.appendChild(appScript);
+      };
+  </script>
+  </head>
+  <body>
+    <h2>Single pixel / triangle area computation</h2>
+    <p>Scroll the mouse to change the virtual pixel size, move the mouse around to change the position.</p>
+    <canvas id="game" width="800" height="600" style="border: 1px solid black;"></canvas>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "ES2016",
+        "module": "CommonJS",
+        "lib": ["DOM"],
+        "moduleResolution": "Node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true,
+        "strict": true,
+        "strictBindCallApply": true,
+        "strictFunctionTypes": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": true,
+        "downlevelIteration": true
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules"]
+}
