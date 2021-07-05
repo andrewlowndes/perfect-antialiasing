@@ -5,7 +5,7 @@ import { dot, lerp, lerp2, normalize, sub } from "../maths/common";
 export const cubicBezierToPoints = (bezier: CubicBezier, splitThreshold: number): Array<Point> => {
   const points = [{ x: bezier.p1.x, y: bezier.p1.y }, { x: bezier.p4.x, y: bezier.p4.y }];
 
-  const cubicBezierSplit = (bezier: CubicBezier, min: number, max: number, insertIndex: number) => {
+  const cubicBezierSplit = (bezier: CubicBezier, min: number, max: number, insertIndex: number, first = false) => {
     const time = lerp(min, max, 0.5);
     const midLerp = lerp2(bezier.p2, bezier.p3, time);
 
@@ -28,13 +28,13 @@ export const cubicBezierToPoints = (bezier: CubicBezier, splitThreshold: number)
 
     points.splice(insertIndex, 0, pointOnCurve);
 
-    if (dot(normalize(sub(prevPoint, pointOnCurve)), normalize(sub(nextPoint, pointOnCurve))) > splitThreshold) {
+    if (dot(normalize(sub(prevPoint, pointOnCurve)), normalize(sub(nextPoint, pointOnCurve))) > splitThreshold || first) {
       cubicBezierSplit(bezier, time, max, insertIndex + 1);
       cubicBezierSplit(bezier, min, time, insertIndex);
     }
   }
 
-  cubicBezierSplit(bezier, 0, 1, 1);
+  cubicBezierSplit(bezier, 0, 1, 1, true);
 
   return points;
 };
