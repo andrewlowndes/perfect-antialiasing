@@ -3,18 +3,38 @@ const path = require('path');
 const buildPath = path.resolve(__dirname, './dist');
 
 module.exports = {
-  mode: 'production',
+  mode: 'development',
   entry: './src/index.ts',
   devtool: 'inline-source-map',
   entry: {
-    'conservative_rasterisation': './src/demos/conservativeRasterisation.ts',
-    'cubic_bezier_simplification': './src/demos/cubicBezierSimplification.ts',
-    'custom_font_webgl': './src/demos/customFontWebgl.ts',
-    'custom_font': './src/demos/customFont.ts',
-    'path_to_polygon': './src/demos/pathToPolygon.ts',
-    'quadratic_bezier_simplification': './src/demos/quadraticBezierSimplification.ts',
-    'rasterised': './src/demos/rasterised.ts',
-    'single_cell': './src/demos/singleCell.ts'
+    'conservative_rasterisation': {
+      import: './src/demos/conservativeRasterisation.ts'
+    },
+    'cubic_bezier_simplification': {
+      import: './src/demos/cubicBezierSimplification.ts'
+    },
+    'custom_font_webgl': {
+      import: './src/demos/customFontWebgl.ts',
+      dependOn: 'shared'
+    },
+    'custom_font': {
+      import: './src/demos/customFont.ts',
+      dependOn: 'shared'
+    },
+    'path_to_polygon': {
+      import: './src/demos/pathToPolygon.ts',
+      dependOn: 'shared'
+    },
+    'quadratic_bezier_simplification': {
+      import: './src/demos/quadraticBezierSimplification.ts'
+    },
+    'rasterised': {
+      import: './src/demos/rasterised.ts'
+    },
+    'single_cell': {
+      import: './src/demos/singleCell.ts'
+    },
+    shared: ['earcut', 'opentype.js'],
   },
   output: {
     filename: '[name].js',
@@ -36,6 +56,8 @@ module.exports = {
     extensions: [ '.tsx', '.ts', '.js', '.html' ]
   },
   devServer: {
-    contentBase: buildPath
+    contentBase: buildPath,
+    injectClient: false,
+    injectHot: false
   }
 };
