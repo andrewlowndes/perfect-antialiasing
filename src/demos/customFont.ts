@@ -95,19 +95,7 @@ const loadChars = () => {
 
 const draw = () => {
     g.clearRect(0, 0, game.width, game.height);
-
-    //draw the converted polygon
-    /*
-    g.fillStyle = "black";
-    polygons.forEach((polygon) => {
-        polygon.forEach((triangle) => {
-            g.beginPath();
-            plotLines(g, triangle.points);
-            g.fill();
-        });
-    });
-    */
-
+    
     allPoints.forEach(points => points.forEach(point => {
         const originalPosition = originalPointPos.get(point)!;
         point.x = (originalPosition.x * scaler) + xPos;
@@ -117,113 +105,42 @@ const draw = () => {
     const imageData = g.getImageData(0, 0, game.width, game.height);
     const data = imageData.data;
 
-    const pixelSums = new Map();
-
     //rasterise our triangle (conservatively) using a dda
-    const oneThird = 0.3333333333333333;
-    const twoThirds = 0.6666666666666666;
-
     polygons.forEach((polygon) => {
         polygon.forEach((triangle) => {
             triangle.e1 = sub(triangle.p2, triangle.p1);
             triangle.e2 = sub(triangle.p3, triangle.p2);
             triangle.e3 = sub(triangle.p1, triangle.p3);
 
-            //if our triangle is fully contained within the pixel then do not need to rasterise and perform collision detection
-            /*
-            const triangleStart = floor(triangle.points![0]);
-
-            //note: this optimisation only works with greyscale currently
-            if (equals(triangleStart, floor(triangle.points[1])) && equals(triangleStart, floor(triangle.points[2]))) {
-                const index = ((game.width * triangleStart.y) + triangleStart.x) * 4;
-                const existingPixel = pixelSums.get(index) || { red: 0, green: 0, blue: 0, alpha: 0 };
+            //otherwise rasterise the triangle
+            rasterizeTriangle(triangle.points!, {
+                pos: { x: 0, y: 0 },
+                cellSize: { x: 1, y: 1 },
+                maxSteps: 100000,
+                min: floor(min2(triangle.points![0], ...triangle.points!.slice(1))),
+                max: ceil(max2(triangle.points![0], ...triangle.points!.slice(1)))
+            }, (boundaryCell) => {
+                const index = ((game.width * boundaryCell.y) + boundaryCell.x) * 4;
                 
-                existingPixel.alpha += polygonArea(triangle.points);
+                const cellBounds = {
+                    min: { x: boundaryCell.x, y: boundaryCell.y },
+                    size: { x: 1, y: 1 },  
+                    max: { x: boundaryCell.x + 1, y: boundaryCell.y + 1 }
+                };
                 
-                pixelSums.set(index, existingPixel);
-            } else {
-            */
-                //otherwise rasterise the triangle
-                rasterizeTriangle(triangle.points!, {
-                    pos: { x: 0, y: 0 },
-                    cellSize: { x: 1, y: 1 },
-                    maxSteps: 100000,
-                    min: floor(min2(triangle.points![0], ...triangle.points!.slice(1))),
-                    max: ceil(max2(triangle.points![0], ...triangle.points!.slice(1)))
-                }, (boundaryCell) => {
-                    const index = ((game.width * boundaryCell.y) + boundaryCell.x) * 4;
-                    const existingPixel = pixelSums.get(index) || { red: 0, green: 0, blue: 0, alpha: 0 };
-                    
-                    //attempt sub-pixel quality by intersecting in three strips
-                    //NOTE: not worth doing this - only useful for fixed 2d fonts
-                    /*
-                    const boundaryTop = boundaryCell.y + 1;
-                    const firstStop = boundaryCell.x + oneThird;
-                    const secondStop = boundaryCell.x + twoThirds;
+                const cellFillPolygon = intersectCellTriangle(triangle, cellBounds);
+                const coverage = clamp(Number(polygonArea(cellFillPolygon).toFixed(5)), 0, 1);
 
-                    existingPixel.red += polygonArea(intersectCellTriangle(triangle, {
-                        min: { x: boundaryCell.x, y: boundaryCell.y }, 
-                        size: { x: oneThird, y: 1 },  
-                        max: { x: firstStop, y: boundaryTop }
-                    })) / oneThird;
+                data[index+3] = Math.min(data[index+3] + (coverage * 255), 255);
+            }, (solidCell) => {
+                const index = ((game.width * solidCell.y) + solidCell.x) * 4;
 
-                    existingPixel.green += polygonArea(intersectCellTriangle(triangle, {
-                        min: { x: firstStop, y: boundaryCell.y }, 
-                        size: { x: oneThird, y: 1 },  
-                        max: { x: secondStop, y: boundaryTop }
-                    })) / oneThird;
-
-                    existingPixel.blue += polygonArea(intersectCellTriangle(triangle, {
-                        min: { x: secondStop, y: boundaryCell.y }, 
-                        size: { x: oneThird, y: 1 },  
-                        max: { x: boundaryCell.x + 1, y: boundaryTop }
-                    })) / oneThird;
-                    */
-
-                    //just greyscale
-
-                    const cellBounds = {
-                        min: { x: boundaryCell.x, y: boundaryCell.y },
-                        size: { x: 1, y: 1 },  
-                        max: { x: boundaryCell.x + 1, y: boundaryCell.y + 1 }
-                    };
-                    
-                    const cellFillPolygon = intersectCellTriangle(triangle, cellBounds);
-                    
-                    //const correctPolygon = polygonclip(triangle.points, cellBounds);
-
-                    //const correctAreaCoverage = clamp(polygonArea(correctPolygon).toFixed(5) / 1, 0, 1); //clamp due to rounding errors
-
-                    const coverage = clamp(Number(polygonArea(cellFillPolygon).toFixed(5)), 0, 1);
-
-                    /*
-                    if (correctAreaCoverage !== coverage) {
-                        console.error('Incorrect coverage for triangle', triangle);
-                        throw new Error();
-                    }*/
-
-                    existingPixel.alpha += coverage;
-
-                    pixelSums.set(index, existingPixel);
-                }, (solidCell) => {
-                    const index = ((game.width * solidCell.y) + solidCell.x) * 4;
-
-                    data[index] = 0;
-                    data[index+1] = 0;
-                    data[index+2] = 0;
-                    data[index+3] = 255;
-                });
-            //}
+                data[index] = 0;
+                data[index+1] = 0;
+                data[index+2] = 0;
+                data[index+3] = 255;
+            });
         });
-    });
-
-    pixelSums.forEach((pixelSum, index) => {
-        /*data[index] = Math.round((1 - pixelSum.red) * 255);
-        data[index+1] = Math.round((1 - pixelSum.green) * 255);
-        data[index+2] = Math.round((1 - pixelSum.blue) * 255);
-        data[index+3] = 255;
-        */
-        data[index+3] = Math.floor(clamp(pixelSum.alpha, 0, 1) * 255);
     });
 
     g.putImageData(imageData, 0, 0);
