@@ -1,8 +1,8 @@
 import { Point } from "../interfaces/Point";
 import { Scanline } from "../interfaces/Scanline";
-import { dda, DdaOptions } from "./dda";
+import { traverse, TraverseOptions } from "./traverse";
 
-export const rasterizeTriangle = (points: Array<Point>, opts: DdaOptions, strokeCallback: (pos: Point) => void, fillCallback: (pos: Point) => void): Record<number, Scanline> => {
+export const rasterizeTriangle = (points: Array<Point>, opts: TraverseOptions, strokeCallback: (pos: Point) => void, fillCallback: (pos: Point) => void): Record<number, Scanline> => {
   const lines = [
     { from: points[0], to: points[1] },
     { from: points[1], to: points[2] },
@@ -12,7 +12,7 @@ export const rasterizeTriangle = (points: Array<Point>, opts: DdaOptions, stroke
   const visitedCells = new Set();
 
   lines.forEach((line) => {
-    dda(line.from, line.to, opts, (pos) => {
+    traverse(line.from, line.to, opts, (pos) => {
       let scanline = scanlines[pos.y];
       const cellIndex = pos.x + ',' + pos.y;
 

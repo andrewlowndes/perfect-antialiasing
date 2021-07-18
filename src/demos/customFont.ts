@@ -7,7 +7,8 @@ import { intersectCellTriangle } from "../geometry/intersectCellTriangle";
 import { pathToPoints } from "../geometry/pathToPoints";
 import { pointsToPolygons } from "../geometry/pointsToPolygon";
 import { polygonArea } from "../geometry/polygonArea";
-import { ceil, clamp, floor, max2, min2, sub } from "../maths/common";
+import { clamp } from "../maths/common";
+import { sub } from "../maths/point";
 import { rasterizeTriangle } from "../render/rasterizeTriangle";
 
 const game = document.getElementById("game") as HTMLCanvasElement;
@@ -115,10 +116,7 @@ const draw = () => {
             //otherwise rasterise the triangle
             rasterizeTriangle(triangle.points!, {
                 pos: { x: 0, y: 0 },
-                cellSize: { x: 1, y: 1 },
-                maxSteps: 100000,
-                min: floor(min2(triangle.points![0], ...triangle.points!.slice(1))),
-                max: ceil(max2(triangle.points![0], ...triangle.points!.slice(1)))
+                cellSize: { x: 1, y: 1 }
             }, (boundaryCell) => {
                 const index = ((game.width * boundaryCell.y) + boundaryCell.x) * 4;
                 

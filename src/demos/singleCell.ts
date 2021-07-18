@@ -4,7 +4,8 @@ import { Triangle } from "../interfaces/Triangle";
 import { intersectCellTriangle } from "../geometry/intersectCellTriangle";
 import { polygonArea } from "../geometry/polygonArea";
 import { polygonclip } from "../geometry/polygonclip";
-import { add, avg, clamp, sub } from "../maths/common";
+import { clamp } from "../maths/common";
+import { add, avg, sub } from "../maths/point";
 import { polygonPath } from "../render/polygonPath";
 
 const p1 = { x: 117.006649999999997, y: 155.76694999999998 };

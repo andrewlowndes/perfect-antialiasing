@@ -1,6 +1,7 @@
 import { Point } from "../interfaces/Point";
 import { QuadraticBezier } from "../interfaces/QuadraticBezier";
-import { dot, lerp, lerp2, normalize, sub } from "../maths/common";
+import { lerp } from "../maths/common";
+import { dot, lerp2, normalize, sub } from "../maths/point";
 
 export const quadraticBezierToPoints = (bezier: QuadraticBezier, splitBoundary: number): Array<Point> => {
     const points = [

@@ -8,7 +8,7 @@ import { aabb } from "../aabb/aabb";
 import { aabbContains } from "../aabb/aabbContains";
 import { aabbIntersect } from "../aabb/aabbIntersect";
 import { combineAabbs } from "../aabb/combineAabbs";
-import { sub } from '../maths/common';
+import { sub } from '../maths/point';
 import { polygonAreaSigned } from "./polygonArea";
 
 interface Group {

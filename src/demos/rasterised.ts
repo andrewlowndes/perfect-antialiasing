@@ -4,7 +4,8 @@ import { aabb } from "../aabb/aabb";
 import { intersectCellTriangle } from "../geometry/intersectCellTriangle";
 import { polygonArea } from "../geometry/polygonArea";
 import { polygonclip } from "../geometry/polygonclip";
-import { avg, ceil, clamp, floor, sub } from "../maths/common";
+import { clamp } from "../maths/common";
+import { avg, ceil, floor, sub } from "../maths/point";
 import { rasterizeTriangle } from "../render/rasterizeTriangle";
 
 const p1 = { x: 60, y: 160 };
@@ -85,10 +86,7 @@ const draw = () => {
   //rasterise our triangle (conservatively) using a dda
   rasterizeTriangle(triangle.points!, {
       pos: { x: 0, y: 0 },
-      cellSize: { x: 1, y: 1 },
-      maxSteps: 100000,
-      min: triangle.aabb.min,
-      max: triangle.aabb.max
+      cellSize: { x: 1, y: 1 }
   }, (boundaryCell) => {
     const cellBounds = {
       min: { x: boundaryCell.x, y: boundaryCell.y }, 

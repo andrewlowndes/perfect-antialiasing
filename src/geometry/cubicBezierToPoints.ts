@@ -1,6 +1,7 @@
 import { CubicBezier } from "../interfaces/CubicBezier";
 import { Point } from "../interfaces/Point";
-import { dot, lerp, lerp2, normalize, sub } from "../maths/common";
+import { lerp } from "../maths/common";
+import { dot, lerp2, normalize, sub } from "../maths/point";
 
 export const cubicBezierToPoints = (bezier: CubicBezier, splitThreshold: number): Array<Point> => {
   const points = [{ x: bezier.p1.x, y: bezier.p1.y }, { x: bezier.p4.x, y: bezier.p4.y }];

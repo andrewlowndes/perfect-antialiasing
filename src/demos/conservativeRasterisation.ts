@@ -1,5 +1,5 @@
 import { Point } from "../interfaces/Point";
-import { add, dot, normalize, scale, sub } from "../maths/common";
+import { add, dot, normalize, scale, sub } from "../maths/point";
 
 import vertCode from '../shaders/conservative.vert';
 import fragCode from '../shaders/conservative.frag';

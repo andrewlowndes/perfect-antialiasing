@@ -1,7 +1,8 @@
 import { Aabb } from "../interfaces/Aabb";
 import { Point } from "../interfaces/Point";
 import { Triangle } from "../interfaces/Triangle";
-import { add, clamp2, scale, timeAtPos } from "../maths/common";
+import { add, clamp2, scale } from "../maths/point";
+import { timeAtPos } from "../maths/common";
 import { sort } from "../maths/sort";
 
 export const intersectCellTriangle = (triangle: Triangle, cell: Aabb): Array<Point> => {
