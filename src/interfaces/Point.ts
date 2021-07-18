@@ -1,4 +1,3 @@
-export interface Point {
-    x: number;
-    y: number;
-}
+import { vec2 } from "gl-matrix";
+
+export type Point = vec2;

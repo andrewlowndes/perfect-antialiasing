@@ -30,14 +30,15 @@ Visit https://andrewlowndes.github.io/perfect-antialiasing/dist/ to see a set of
     - [x] SVG test
     - [x] Cell logic
     - [x] Custom font rendering
-- [ ] WebGL 1.0 Demo (slower but more portable - mobiles, old devices)
+- [ ] WebGL
     - [x] Conservative rasterisation (vertex-shader based shifting)
     - [x] Custom font rendering
+    - [x] 3D Triangle
     - [ ] 3D scene
     - [ ] Tesselation alternative for WebGL
     - [ ] Instancing alternative for WebGL (vertex texture / index buffers per char)
     - [ ] Performance test
-- [ ] Vulcan Demo (utilising https://github.com/maierfelix/nvk)
+- [ ] Vulcan
     - [ ] Cubic/quadratic bezier tesselation via tesselation/geometry shader
     - [ ] Conservative rasterisation using gpu extensions
     - [ ] Instancing

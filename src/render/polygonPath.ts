@@ -6,11 +6,11 @@ export const polygonPath = (g: CanvasRenderingContext2D, points: Array<Point>) =
     }
   
     const firstPoint = points[0];
-    g.moveTo(firstPoint.x, g.canvas.height - firstPoint.y);
+    g.moveTo(firstPoint[0], g.canvas.height - firstPoint[1]);
   
     for (let i = 1; i < points.length; i++) {
       const point = points[i];
-      g.lineTo(point.x, g.canvas.height - point.y);
+      g.lineTo(point[0], g.canvas.height - point[1]);
     }
   
     g.closePath();

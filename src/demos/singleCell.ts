@@ -5,12 +5,13 @@ import { intersectCellTriangle } from "../geometry/intersectCellTriangle";
 import { polygonArea } from "../geometry/polygonArea";
 import { polygonclip } from "../geometry/polygonclip";
 import { clamp } from "../maths/common";
-import { add, avg, sub } from "../maths/point";
+import { add, avg, scale, sub } from "../maths/point";
 import { polygonPath } from "../render/polygonPath";
+import { vec2 } from "gl-matrix";
 
-const p1 = { x: 117.006649999999997, y: 155.76694999999998 };
-const p2 = { x: 216.7078, y: 155.76 };
-const p3 = { x: 216.7078, y: 255.42639999999997 };
+const p1 = vec2.fromValues(117.006649999999997, 155.76694999999998);
+const p2 = vec2.fromValues(216.7078, 155.76);
+const p3 = vec2.fromValues(216.7078, 255.42639999999997);
 
 const triangle: Triangle = {
   p1,
@@ -24,7 +25,7 @@ const triangle: Triangle = {
 
 triangle.points = [triangle.p1, triangle.p2, triangle.p3];
 
-triangle.center = avg(triangle.points);
+triangle.center = avg(...triangle.points);
 
 interface Cell {
   min: Point;
@@ -32,8 +33,8 @@ interface Cell {
   max: Point;
 }
 
-const cellMin = { x: 100, y: 50 };
-const cellSize = { x: 250, y: 250 };
+const cellMin = vec2.fromValues(100, 50);
+const cellSize = vec2.fromValues(250, 250);
 
 const cell: Cell = {
   min: cellMin,
@@ -55,53 +56,39 @@ let cellFillPolygon, areaCoverage, cellColour;
 
 game.onwheel = function(e) {
   if (e.deltaY > 0 ) {
-    cell.size.x *= (1.0 - scaleAmount);
-    cell.size.y *= (1.0 - scaleAmount);
+    vec2.scale(cell.size, cell.size, (1.0 - scaleAmount));
   } else if (e.deltaY < 0) {
-    cell.size.x *= (1.0 + scaleAmount);
-    cell.size.y *= (1.0 + scaleAmount);
+    vec2.scale(cell.size, cell.size, (1.0 + scaleAmount));
   }
+
+  const delta = scale(sub(cell.size, sub(cell.max, cell.min)), 0.5);
   
-  const deltaWidth = (cell.size.x - (cell.max.x - cell.min.x)) / 2;
-  const deltaHeight = (cell.size.y - (cell.max.y - cell.min.y)) / 2;
-  
-  cell.min.x -= deltaWidth;
-  cell.min.y -= deltaHeight;
-  cell.max.x += deltaWidth;
-  cell.max.y += deltaHeight;
+  vec2.subtract(cell.min, cell.min, delta);
+  vec2.add(cell.max, cell.max, delta);
 
   return false;
 };
 
 game.onmousemove = function(e) {
   const bounds = game.getBoundingClientRect();
-  const mousePos = {
-    x: e.pageX - bounds.left - document.documentElement.scrollLeft, 
-    y: game.height - (e.pageY - bounds.top - document.documentElement.scrollTop)
-  };
+  const mousePos = vec2.fromValues(
+    e.pageX - bounds.left - document.documentElement.scrollLeft, 
+    game.height - (e.pageY - bounds.top - document.documentElement.scrollTop)
+  );
   
-  const halfWidth = cell.size.x / 2;
-  const halfHeight = cell.size.y / 2;
-  
-  cell.min.x = mousePos.x - halfWidth;
-  cell.min.y = mousePos.y - halfHeight;
-  cell.max.x = mousePos.x + halfWidth;
-  cell.max.y = mousePos.y + halfHeight;
+  const halfSize = scale(cell.size, 0.5);
+
+  vec2.copy(cell.min, sub(mousePos, halfSize));
+  vec2.copy(cell.max, add(mousePos, halfSize));
 }
 
 const rotateAmount = 0.01;
-const cosRotate = Math.cos(rotateAmount);
-const sineRotate = Math.sin(rotateAmount);
 
-const cellArea = (cell: Cell) => cell.size.x * cell.size.y;
+const cellArea = (cell: Cell) => cell.size[0] * cell.size[1];
 
 const draw = () => {
   triangle.points!.forEach((point) => {
-    const dx = point.x - triangle.center!.x;
-    const dy = point.y - triangle.center!.y;
-
-    point.x = triangle.center!.x + (dx * cosRotate) - (dy * sineRotate);
-    point.y = triangle.center!.y + (dx * sineRotate) + (dy * cosRotate);
+    vec2.rotate(point, point, triangle.center!, rotateAmount);
   });
 
   triangle.e1 = sub(triangle.p2, triangle.p1);
@@ -109,25 +96,28 @@ const draw = () => {
   triangle.e3 = sub(triangle.p1, triangle.p3);
   
   cellFillPolygon = intersectCellTriangle(triangle, cell);
-  areaCoverage = clamp(Number(polygonArea(cellFillPolygon).toFixed(5)) / cellArea(cell), 0, 1); //clamp due to rounding errors
+  areaCoverage = clamp(polygonArea(cellFillPolygon) / cellArea(cell), 0, 1); //clamp due to rounding errors
   cellColour = Math.floor((1.0 - areaCoverage) * 255);
 
+  //compare our branch-less triangle square clipping
+  /*
   const correctPolygon = polygonclip(triangle.points!, cell);
-  const correctAreaCoverage = clamp(Number(polygonArea(correctPolygon).toFixed(5)) / cellArea(cell), 0, 1); //clamp due to rounding errors
+  const correctAreaCoverage = clamp(polygonArea(correctPolygon) / cellArea(cell), 0, 1); //clamp due to rounding errors
 
-  if (correctAreaCoverage!==areaCoverage) {
+  if (correctAreaCoverage.toFixed(5) !== areaCoverage.toFixed(5)) {
     console.error('Incorrect area, expected ' + correctAreaCoverage + ' but got ' + areaCoverage);
   }
+  */
 
   g.clearRect(0, 0, game.width, game.height);
   
   //fill in the cell using a greyscale based on the area coverage
   g.fillStyle = "rgb(" + cellColour + "," + cellColour  + "," + cellColour  + ")";
-  g.fillRect(cell.min.x, game.height-cell.min.y-cell.size.y, cell.size.x, cell.size.y);
+  g.fillRect(cell.min[0], game.height-cell.min[1]-cell.size[1], cell.size[0], cell.size[1]);
   
   //draw our cell
   g.strokeStyle = "green";
-  g.strokeRect(cell.min.x, game.height-cell.min.y-cell.size.y, cell.size.x, cell.size.y);
+  g.strokeRect(cell.min[0], game.height-cell.min[1]-cell.size[1], cell.size[0], cell.size[1]);
   
   //draw our triangle
   g.strokeStyle = "red";

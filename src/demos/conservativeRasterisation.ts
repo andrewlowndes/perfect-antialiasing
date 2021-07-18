@@ -3,6 +3,7 @@ import { add, dot, normalize, scale, sub } from "../maths/point";
 
 import vertCode from '../shaders/conservative.vert';
 import fragCode from '../shaders/conservative.frag';
+import { vec2 } from "gl-matrix";
 
 const vertexSize = 2;
 
@@ -70,16 +71,16 @@ const draw2D = () => {
     g.stroke();
   }
 
-  const p1 = { x: getX(0), y: getY(0) };
-  const p2 = { x: getX(1), y: getY(1) };
-  const p3 = { x: getX(2), y: getY(2) };
+  const p1 = vec2.fromValues(getX(0), getY(0));
+  const p2 = vec2.fromValues(getX(1), getY(1));
+  const p3 = vec2.fromValues(getX(2), getY(2));
 
   //draw the main triangle
   g.strokeStyle = 'white';
   g.beginPath();
-  g.moveTo(p1.x, p1.y);
-  g.lineTo(p2.x, p2.y);
-  g.lineTo(p3.x, p3.y);
+  g.moveTo(p1[0], p1[1]);
+  g.lineTo(p2[0], p2[1]);
+  g.lineTo(p3[0], p3[1]);
   g.closePath();
   g.stroke();
 
@@ -91,9 +92,9 @@ const draw2D = () => {
 
   g.strokeStyle = 'green';
   g.beginPath();
-  g.moveTo(nextP1.x, nextP1.y);
-  g.lineTo(nextP2.x, nextP2.y);
-  g.lineTo(nextP3.x, nextP3.y);
+  g.moveTo(nextP1[0], nextP1[1]);
+  g.lineTo(nextP2[0], nextP2[1]);
+  g.lineTo(nextP3[0], nextP3[1]);
   g.closePath();
   g.stroke();
   */
@@ -115,7 +116,7 @@ const draw2D = () => {
 
   for (const point of points) {
     g.beginPath();
-    g.arc(point.x, point.y, radius, 0, pi2);
+    g.arc(point[0], point[1], radius, 0, pi2);
     g.fill();
   }
 };
@@ -232,43 +233,43 @@ const drawGL = () => {
 //animate the top vertex between -1 and 1 and trigger to redraw
 const setVertexPosition = (index: number, pos: Point) => {
   const startIndex = index * vertexSize;
-  vertices[startIndex] = pos.x;
-  vertices[startIndex + 1] = pos.y;
+  vertices[startIndex] = pos[0];
+  vertices[startIndex + 1] = pos[1];
 
   const prevPosStartIndex = (startIndex + vertexSize) % prevPos.length;
-  prevPos[prevPosStartIndex] = pos.x;
-  prevPos[prevPosStartIndex + 1] = pos.y;
+  prevPos[prevPosStartIndex] = pos[0];
+  prevPos[prevPosStartIndex + 1] = pos[1];
 
   const nextPosStartIndex = (startIndex - vertexSize + nextPos.length) % nextPos.length;
-  nextPos[nextPosStartIndex] = pos.x;
-  nextPos[nextPosStartIndex + 1] = pos.y;
+  nextPos[nextPosStartIndex] = pos[0];
+  nextPos[nextPosStartIndex + 1] = pos[1];
 };
 
-const p1Dir = { x: 1, y: 1 };
-const p2Dir = { x: -1, y: -1 };
-const p3Dir = { x: -1, y: -1 };
-const newP1 = { x: vertices[0], y: vertices[1] };
-const newP2 = { x: vertices[2], y: vertices[3] };
-const newP3 = { x: vertices[4], y: vertices[5] };
+const p1Dir = vec2.fromValues(1, 1);
+const p2Dir = vec2.fromValues(-1, -1);
+const p3Dir = vec2.fromValues(-1, -1);
+const newP1 = vec2.fromValues(vertices[0], vertices[1]);
+const newP2 = vec2.fromValues(vertices[2], vertices[3]);
+const newP3 = vec2.fromValues(vertices[4], vertices[5]);
 const step = 0.001;
 
 const animate = () => {
-  newP1.x += step * p1Dir.x;
-  newP1.y += step * p1Dir.y;
-  if (Math.abs(newP1.x) > 1) p1Dir.x *= -1;
-  if (Math.abs(newP1.y) > 1) p1Dir.y *= -1;
+  newP1[0] += step * p1Dir[0];
+  newP1[1] += step * p1Dir[1];
+  if (Math.abs(newP1[0]) > 1) p1Dir[0] *= -1;
+  if (Math.abs(newP1[1]) > 1) p1Dir[1] *= -1;
   setVertexPosition(0, newP1);
 
-  newP2.x += step * p2Dir.x;
-  newP2.y += step * p2Dir.y;
-  if (Math.abs(newP2.x) > 1) p2Dir.x *= -1;
-  if (Math.abs(newP2.y) > 1) p2Dir.y *= -1;
+  newP2[0] += step * p2Dir[0];
+  newP2[1] += step * p2Dir[1];
+  if (Math.abs(newP2[0]) > 1) p2Dir[0] *= -1;
+  if (Math.abs(newP2[1]) > 1) p2Dir[1] *= -1;
   setVertexPosition(1, newP2);
 
-  newP3.x += step * p3Dir.x;
-  newP3.y += step * p3Dir.y;
-  if (Math.abs(newP3.x) > 1) p3Dir.x *= -1;
-  if (Math.abs(newP3.y) > 1) p3Dir.y *= -1;
+  newP3[0] += step * p3Dir[0];
+  newP3[1] += step * p3Dir[1];
+  if (Math.abs(newP3[0]) > 1) p3Dir[0] *= -1;
+  if (Math.abs(newP3[1]) > 1) p3Dir[1] *= -1;
   setVertexPosition(2, newP3);
 
   draw2D();

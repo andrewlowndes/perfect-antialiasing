@@ -23,7 +23,7 @@ export const pointsToPolygons = (points: Array<Array<Point>>): Array<Array<Trian
   points.forEach((pointsArr) => {
     const group = {
       points: pointsArr,
-      aabb: aabb(pointsArr)
+      aabb: aabb(...pointsArr)
     };
 
     if (polygonAreaSigned(pointsArr) > 0) {
@@ -66,8 +66,8 @@ export const pointsToPolygons = (points: Array<Array<Point>>): Array<Array<Trian
 
     allPoints.push(...solidGroup.points);
     solidGroup.points.map((point) => {
-      vertexData.push(point.x);
-      vertexData.push(point.y);
+      vertexData.push(point[0]);
+      vertexData.push(point[1]);
     });
 
     holeGroups.filter((holeGroup) => aabbIntersect(holeGroup.aabb, solidGroup.aabb)).forEach((holeGroup) => {
@@ -75,8 +75,8 @@ export const pointsToPolygons = (points: Array<Array<Point>>): Array<Array<Trian
       holeIndices.push(vertexData.length / 2);
 
       holeGroup.points.forEach((holePoint) => {
-        vertexData.push(holePoint.x);
-        vertexData.push(holePoint.y);
+        vertexData.push(holePoint[0]);
+        vertexData.push(holePoint[1]);
       });
     });
 

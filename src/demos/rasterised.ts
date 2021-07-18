@@ -7,10 +7,11 @@ import { polygonclip } from "../geometry/polygonclip";
 import { clamp } from "../maths/common";
 import { avg, ceil, floor, sub } from "../maths/point";
 import { rasterizeTriangle } from "../render/rasterizeTriangle";
+import { vec2 } from "gl-matrix";
 
-const p1 = { x: 60, y: 160 };
-const p2 = { x: 150, y: 170 };
-const p3 = { x: 250, y: 130 };
+const p1 = vec2.fromValues(60, 160);
+const p2 = vec2.fromValues(150, 170);
+const p3 = vec2.fromValues(250, 130);
 
 const triangle: Triangle = {
   p1,
@@ -22,7 +23,7 @@ const triangle: Triangle = {
   e3: sub(p1, p3)
 };
 
-triangle.center = avg(triangle.points!);
+triangle.center = avg(...triangle.points!);
 
 const game = document.getElementById("game") as HTMLCanvasElement;
 const g = game.getContext("2d");
@@ -34,22 +35,22 @@ if (!g) {
 //intersect the triangle with the cell and produce a polygon
 game.onmousemove = function(e) {
   const bounds = game.getBoundingClientRect();
-  const mousePos = {
-    x: e.pageX - bounds.left - document.documentElement.scrollLeft, 
-    y: e.pageY - bounds.top - document.documentElement.scrollTop
-  };
+  const mousePos = vec2.fromValues(
+    e.pageX - bounds.left - document.documentElement.scrollLeft, 
+    e.pageY - bounds.top - document.documentElement.scrollTop
+  );
 
-  const moveAmount = {
-    x: mousePos.x - triangle.center!.x,
-    y: mousePos.y - triangle.center!.y
-  };
+  const moveAmount = vec2.fromValues(
+    mousePos[0] - triangle.center![0],
+    mousePos[1] - triangle.center![1]
+  );
 
-  triangle.center!.x = mousePos.x;
-  triangle.center!.y = mousePos.y;        
+  triangle.center![0] = mousePos[0];
+  triangle.center![1] = mousePos[1];        
 
   triangle.points!.forEach((point) => {
-    point.x += moveAmount.x;
-    point.y += moveAmount.y;
+    point[0] += moveAmount[0];
+    point[1] += moveAmount[1];
   });
 }
 
@@ -65,18 +66,18 @@ const draw = () => {
 
   //lets rotate our triangle a little so we can appreciate the aliasing
   triangle.points!.forEach((point) => {
-    const dx = point.x - triangle.center!.x;
-    const dy = point.y - triangle.center!.y;
+    const dx = point[0] - triangle.center![0];
+    const dy = point[1] - triangle.center![1];
 
-    point.x = triangle.center!.x + (dx * cosRotate) - (dy * sineRotate);
-    point.y = triangle.center!.y + (dx * sineRotate) + (dy * cosRotate);
+    point[0] = triangle.center![0] + (dx * cosRotate) - (dy * sineRotate);
+    point[1] = triangle.center![1] + (dx * sineRotate) + (dy * cosRotate);
   });
 
   triangle.e1 = sub(triangle.p2, triangle.p1);
   triangle.e2 = sub(triangle.p3, triangle.p2);
   triangle.e3 = sub(triangle.p1, triangle.p3);
   
-  const triangleAabb = aabb(triangle.points!);
+  const triangleAabb = aabb(...triangle.points!);
 
   triangle.aabb = {
     min: floor(triangleAabb.min),
@@ -85,36 +86,40 @@ const draw = () => {
 
   //rasterise our triangle (conservatively) using a dda
   rasterizeTriangle(triangle.points!, {
-      pos: { x: 0, y: 0 },
-      cellSize: { x: 1, y: 1 }
+      pos: vec2.create(),
+      cellSize: vec2.fromValues(1, 1)
   }, (boundaryCell) => {
     const cellBounds = {
-      min: { x: boundaryCell.x, y: boundaryCell.y }, 
-      size: { x: 1, y: 1 },  
-      max: { x: boundaryCell.x + 1, y: boundaryCell.y + 1 }
+      min: vec2.fromValues(boundaryCell[0], boundaryCell[1]), 
+      size: vec2.fromValues(1, 1),  
+      max: vec2.fromValues(boundaryCell[0] + 1, boundaryCell[1] + 1)
     };
 
     const cellFillPolygon = intersectCellTriangle(triangle, cellBounds);
     
+    const areaCoverage = clamp(polygonArea(cellFillPolygon), 0, 1);
+
+    /*
+    //compare the two clipping algorithms
     const correctPolygon = polygonclip(triangle.points!, cellBounds);
 
-    const correctAreaCoverage = clamp(Number(polygonArea(correctPolygon).toFixed(5)) / 1, 0, 1); //clamp due to rounding errors
+    const correctAreaCoverage = clamp(polygonArea(correctPolygon), 0, 1); //clamp due to rounding errors
 
-    const areaCoverage = clamp(Number(polygonArea(cellFillPolygon).toFixed(5)), 0, 1);
-
-    if (correctAreaCoverage !== areaCoverage) {
-      console.error('Incorrect coverage', triangle.points);
+    if (correctAreaCoverage.toFixed(5) !== areaCoverage.toFixed(5)) {
+      console.error(areaCoverage, correctAreaCoverage);
+      throw new Error('Incorrect coverage');
     }
+    */
 
     const colour = Math.floor(areaCoverage * 255);
-    const index = ((game.width * boundaryCell.y) + boundaryCell.x) * 4;
+    const index = ((game.width * boundaryCell[1]) + boundaryCell[0]) * 4;
 
     data[index] = 0;
     data[index+1] = 0;
     data[index+2] = 0;
     data[index+3] = colour;
   }, (solidCell) => {
-    const index = ((game.width * solidCell.y) + solidCell.x) * 4;
+    const index = ((game.width * solidCell[1]) + solidCell[0]) * 4;
 
     data[index] = 0;
     data[index+1] = 0;

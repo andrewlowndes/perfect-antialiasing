@@ -10,6 +10,7 @@ import { polygonArea } from "../geometry/polygonArea";
 import { clamp } from "../maths/common";
 import { sub } from "../maths/point";
 import { rasterizeTriangle } from "../render/rasterizeTriangle";
+import { vec2 } from "gl-matrix";
 
 const game = document.getElementById("game") as HTMLCanvasElement;
 const game2 = document.getElementById("game2") as HTMLCanvasElement;
@@ -99,8 +100,8 @@ const draw = () => {
     
     allPoints.forEach(points => points.forEach(point => {
         const originalPosition = originalPointPos.get(point)!;
-        point.x = (originalPosition.x * scaler) + xPos;
-        point.y = (originalPosition.y * scaler) + yPos;
+        point[0] = (originalPosition[0] * scaler) + xPos;
+        point[1] = (originalPosition[1] * scaler) + yPos;
     }));
     
     const imageData = g.getImageData(0, 0, game.width, game.height);
@@ -115,15 +116,15 @@ const draw = () => {
 
             //otherwise rasterise the triangle
             rasterizeTriangle(triangle.points!, {
-                pos: { x: 0, y: 0 },
-                cellSize: { x: 1, y: 1 }
+                pos: vec2.create(),
+                cellSize: vec2.fromValues(1, 1)
             }, (boundaryCell) => {
-                const index = ((game.width * boundaryCell.y) + boundaryCell.x) * 4;
+                const index = ((game.width * boundaryCell[1]) + boundaryCell[0]) * 4;
                 
                 const cellBounds = {
-                    min: { x: boundaryCell.x, y: boundaryCell.y },
-                    size: { x: 1, y: 1 },  
-                    max: { x: boundaryCell.x + 1, y: boundaryCell.y + 1 }
+                    min: vec2.fromValues(boundaryCell[0], boundaryCell[1]),
+                    size: vec2.fromValues(1, 1),  
+                    max: vec2.fromValues(boundaryCell[0] + 1, boundaryCell[1] + 1)
                 };
                 
                 const cellFillPolygon = intersectCellTriangle(triangle, cellBounds);
@@ -131,7 +132,7 @@ const draw = () => {
 
                 data[index+3] = Math.min(data[index+3] + (coverage * 255), 255);
             }, (solidCell) => {
-                const index = ((game.width * solidCell.y) + solidCell.x) * 4;
+                const index = ((game.width * solidCell[1]) + solidCell[0]) * 4;
 
                 data[index] = 0;
                 data[index+1] = 0;

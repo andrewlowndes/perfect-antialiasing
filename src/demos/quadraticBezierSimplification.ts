@@ -1,3 +1,4 @@
+import { vec2 } from "gl-matrix";
 import { quadraticBezierToPoints } from "../geometry/quadraticBezierToPoints";
 import { plotLines } from "../render/plotLines";
 
@@ -10,75 +11,75 @@ if (!g) {
 
 const beziers = [
   {
-    p1: { x: 10, y: 10 },
-    p2: { x: 10, y: 100 },
-    p3: { x: 100, y: 10 }
+    p1: vec2.fromValues(10, 10),
+    p2: vec2.fromValues(10, 100),
+    p3: vec2.fromValues(100, 10)
   },
   {
-    p1: { x: 110, y: 10 },
-    p2: { x: 200, y: 100 },
-    p3: { x: 200, y: 10 }
+    p1: vec2.fromValues(110, 10),
+    p2: vec2.fromValues(200, 100),
+    p3: vec2.fromValues(200, 10)
   },
   {
-    p1: { x: 210, y: 10 },
-    p2: { x: 260, y: 100 },
-    p3: { x: 300, y: 10 }
+    p1: vec2.fromValues(210, 10),
+    p2: vec2.fromValues(260, 100),
+    p3: vec2.fromValues(300, 10)
   },
   {
-    p1: { x: 310, y: 10 },
-    p2: { x: 360, y: 50 },
-    p3: { x: 400, y: 10 }
+    p1: vec2.fromValues(310, 10),
+    p2: vec2.fromValues(360, 50),
+    p3: vec2.fromValues(400, 10)
   },
   {
-    p1: { x: 450, y: 10 },
-    p2: { x: 410, y: 100 },
-    p3: { x: 460, y: 10 }
+    p1: vec2.fromValues(450, 10),
+    p2: vec2.fromValues(410, 100),
+    p3: vec2.fromValues(460, 10)
   },
   {
-    p1: { x: 550, y: 10 },
-    p2: { x: 600, y: 100 },
-    p3: { x: 560, y: 10 }
+    p1: vec2.fromValues(550, 10),
+    p2: vec2.fromValues(600, 100),
+    p3: vec2.fromValues(560, 10)
   },
   {
-    p1: { x: 610, y: 10 },
-    p2: { x: 650, y: 10 },
-    p3: { x: 700, y: 10 }
+    p1: vec2.fromValues(610, 10),
+    p2: vec2.fromValues(650, 10),
+    p3: vec2.fromValues(700, 10)
   },
   //
   {
-    p1: { x: 10, y: 200 },
-    p2: { x: 10, y: 110 },
-    p3: { x: 100, y: 200 }
+    p1: vec2.fromValues(10, 200),
+    p2: vec2.fromValues(10, 110),
+    p3: vec2.fromValues(100, 200)
   },
   {
-    p1: { x: 110, y: 200 },
-    p2: { x: 200, y: 110 },
-    p3: { x: 200, y: 200 }
+    p1: vec2.fromValues(110, 200),
+    p2: vec2.fromValues(200, 110),
+    p3: vec2.fromValues(200, 200)
   },
   {
-    p1: { x: 210, y: 200 },
-    p2: { x: 260, y: 110 },
-    p3: { x: 300, y: 200 }
+    p1: vec2.fromValues(210, 200),
+    p2: vec2.fromValues(260, 110),
+    p3: vec2.fromValues(300, 200)
   },
   {
-    p1: { x: 310, y: 200 },
-    p2: { x: 360, y: 150 },
-    p3: { x: 400, y: 200 }
+    p1: vec2.fromValues(310, 200),
+    p2: vec2.fromValues(360, 150),
+    p3: vec2.fromValues(400, 200)
   },
   {
-    p1: { x: 450, y: 200 },
-    p2: { x: 410, y: 110 },
-    p3: { x: 460, y: 200 }
+    p1: vec2.fromValues(450, 200),
+    p2: vec2.fromValues(410, 110),
+    p3: vec2.fromValues(460, 200)
   },
   {
-    p1: { x: 550, y: 200 },
-    p2: { x: 600, y: 110 },
-    p3: { x: 560, y: 200 }
+    p1: vec2.fromValues(550, 200),
+    p2: vec2.fromValues(600, 110),
+    p3: vec2.fromValues(560, 200)
   },
   {
-    p1: { x: 610, y: 110 },
-    p2: { x: 650, y: 110 },
-    p3: { x: 700, y: 110 }
+    p1: vec2.fromValues(610, 110),
+    p2: vec2.fromValues(650, 110),
+    p3: vec2.fromValues(700, 110)
   },
 ];
 
@@ -99,8 +100,8 @@ const draw = () => {
     /*
     g.strokeStyle = "red";
     g.beginPath();
-    g.moveTo(bezier.p1.x, game.height - bezier.p1.y);
-    g.quadraticCurveTo(bezier.p2.x, game.height - bezier.p2.y, bezier.p3.x, game.height - bezier.p3.y);
+    g.moveTo(bezier.p1[0], game.height - bezier.p1[1]);
+    g.quadraticCurveTo(bezier.p2[0], game.height - bezier.p2[1], bezier.p3[0], game.height - bezier.p3[1]);
     g.stroke();
     */
 

@@ -1,3 +1,4 @@
+import { vec2 } from "gl-matrix";
 import { Point } from "../interfaces/Point";
 import { Scanline } from "../interfaces/Scanline";
 import { traverse, TraverseOptions } from "./traverse";
@@ -13,37 +14,38 @@ export const rasterizeTriangle = (points: Array<Point>, opts: TraverseOptions, s
 
   lines.forEach((line) => {
     traverse(line.from, line.to, opts, (pos) => {
-      let scanline = scanlines[pos.y];
-      const cellIndex = pos.x + ',' + pos.y;
+      let scanline = scanlines[pos[1]];
+      const cellIndex = pos[0] + ',' + pos[1];
 
       if (visitedCells.has(cellIndex)) {
         return;
       }
 
       if (!scanline) {
-        scanline = { min: pos.x, max: pos.x };
+        scanline = { min: pos[0], max: pos[0] };
       } else {
-        scanline.min = Math.min(scanline.min, pos.x);
-        scanline.max = Math.max(scanline.max, pos.x);
+        scanline.min = Math.min(scanline.min, pos[0]);
+        scanline.max = Math.max(scanline.max, pos[0]);
       }
 
-      scanlines[pos.y] = scanline;
+      scanlines[pos[1]] = scanline;
 
       strokeCallback(pos);
       visitedCells.add(cellIndex);
     });
   });
 
-  const coord = { x: 0, y: 0 };
+  const coord = vec2.create();
+
   for (let y in scanlines) {
     if (scanlines.hasOwnProperty(y)) {
-      coord.y = parseInt(y, 10);
+      coord[1] = parseInt(y, 10);
 
       const scanline = scanlines[y];
 
       //run a callback for all of the blocks that are between our points and not a boundary
-      for (coord.x = scanline.min + 1; coord.x < scanline.max; coord.x++) {
-        if (!visitedCells.has(coord.x + ',' + coord.y)) {
+      for (coord[0] = scanline.min + 1; coord[0] < scanline.max; coord[0]++) {
+        if (!visitedCells.has(coord[0] + ',' + coord[1])) {
           fillCallback(coord);
         }
       }

@@ -1,4 +1,5 @@
 import { BoundingBox, Font, load } from "opentype.js";
+import { vec2 } from "gl-matrix";
 
 import { Point } from "../interfaces/Point";
 import { Triangle } from "../interfaces/Triangle";
@@ -47,18 +48,18 @@ const bindCharSelect = () => {
 }
 
 const loadPath = (pathStr: string, aBounds: BoundingBox) => {
-  const size = {
-    x: Math.round(aBounds.x2 - aBounds.x1),
-    y: Math.round(aBounds.y2 - aBounds.y1)
-  };
+  const size = vec2.fromValues(
+    Math.round(aBounds.x2 - aBounds.x1),
+    Math.round(aBounds.y2 - aBounds.y1)
+  );
 
   //create an avg for comparison
   svgPreview.innerHTML = '';
   const svgNs = "http://www.w3.org/2000/svg";
   const newSvg = document.createElementNS(svgNs, 'svg');
-  newSvg.setAttributeNS(null, 'width', size.x.toString());
-  newSvg.setAttributeNS(null, 'height', size.y.toString());
-  newSvg.setAttributeNS(null, 'viewBox', [aBounds.x1, aBounds.y1, size.x, size.y].join(' '));
+  newSvg.setAttributeNS(null, 'width', size[0].toString());
+  newSvg.setAttributeNS(null, 'height', size[1].toString());
+  newSvg.setAttributeNS(null, 'viewBox', [aBounds.x1, aBounds.y1, size[0], size[1]].join(' '));
   const svgPath = document.createElementNS(svgNs, 'path');
   svgPath.setAttributeNS(null, 'd', pathStr);
   newSvg.appendChild(svgPath);
@@ -70,8 +71,8 @@ const loadPath = (pathStr: string, aBounds: BoundingBox) => {
   polygons = pointsToPolygons(points);
 
   points.forEach(points => points.forEach(point => {
-    point.x -= aBounds.x1;
-    point.y = game.height - point.y + aBounds.y1;
+    point[0] -= aBounds.x1;
+    point[1] = game.height - point[1] + aBounds.y1;
   }));
 }
 
@@ -97,7 +98,7 @@ const draw = () => {
   g.fillStyle = "black";
   polygons.forEach((polygon) => {
     polygon.forEach((triangle) => {
-      //g.fillStyle = "rgb(" + triangle.colour.x + "," + triangle.colour.y + "," + triangle.colour.z + ")";
+      //g.fillStyle = "rgb(" + triangle.colour[0] + "," + triangle.colour.y + "," + triangle.colour.z + ")";
       g.beginPath();
       plotLines(g, triangle.points!);
       g.fill();

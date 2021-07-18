@@ -1,3 +1,4 @@
+import { vec2 } from "gl-matrix";
 import { Point } from "../interfaces/Point";
 import { QuadraticBezier } from "../interfaces/QuadraticBezier";
 import { lerp } from "../maths/common";
@@ -5,8 +6,8 @@ import { dot, lerp2, normalize, sub } from "../maths/point";
 
 export const quadraticBezierToPoints = (bezier: QuadraticBezier, splitBoundary: number): Array<Point> => {
     const points = [
-        { x: bezier.p1.x, y: bezier.p1.y }, 
-        { x: bezier.p3.x, y: bezier.p3.y }
+        vec2.clone(bezier.p1),
+        vec2.clone(bezier.p3)
     ];
 
     const quadraticBezierSplit = (bezier: QuadraticBezier, min: number, max: number, insertIndex: number) => {

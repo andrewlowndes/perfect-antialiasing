@@ -1,3 +1,4 @@
+import { vec2 } from "gl-matrix";
 import { Point } from "../interfaces/Point";
 import { cubicBezierToPoints } from "./cubicBezierToPoints";
 import { quadraticBezierToPoints } from "./quadraticBezierToPoints";
@@ -12,7 +13,7 @@ export const pathToPoints = (pathStr: string, splitBoundary: number): Array<Arra
 
     if (pathBlocks.length) {
         let currentPolygon: Array<Point> = [];
-        const currentPoint = { x: 0, y: 0 };
+        const currentPoint = vec2.create();
 
         while (pathBlocks.length) {
             const block = pathBlocks.shift();
@@ -31,16 +32,14 @@ export const pathToPoints = (pathStr: string, splitBoundary: number): Array<Arra
                 case 'l': //lineTo
                 case 'm': //moveTo
                     while (pathParts.length) {
-                        const nextPoint = { x: parseFloat(pathParts.shift()!), y: parseFloat(pathParts.shift()!) };
+                        const nextPoint = vec2.fromValues(parseFloat(pathParts.shift()!), parseFloat(pathParts.shift()!));
                         
                         if (isRelative) {
-                            nextPoint.x += currentPoint.x;
-                            nextPoint.y += currentPoint.y;
+                            vec2.add(nextPoint, nextPoint, currentPoint);
                         }
 
                         currentPolygon.push(nextPoint);
-                        currentPoint.x = nextPoint.x;
-                        currentPoint.y = nextPoint.y;
+                        vec2.copy(currentPoint, nextPoint);
                     }
                     break;
                 case 'h': //horizontalLineTo
@@ -48,11 +47,11 @@ export const pathToPoints = (pathStr: string, splitBoundary: number): Array<Arra
                         let nextX = parseFloat(pathParts.shift()!);
                         
                         if (isRelative) {
-                            nextX += currentPoint.x;
+                            nextX += currentPoint[0];
                         }
 
-                        currentPolygon.push({ x: nextX, y: currentPoint.y });
-                        currentPoint.x = nextX;
+                        currentPolygon.push(vec2.fromValues(nextX, currentPoint[1]));
+                        currentPoint[0] = nextX;
                     }
                     break;
                 case 'v': //verticalLineTo
@@ -60,35 +59,31 @@ export const pathToPoints = (pathStr: string, splitBoundary: number): Array<Arra
                         let nextY = parseFloat(pathParts.shift()!);
                         
                         if (isRelative) {
-                            nextY += currentPoint.y;
+                            nextY += currentPoint[1];
                         }
 
-                        currentPolygon.push({ x: currentPoint.x, y: nextY });
-                        currentPoint.y = nextY;
+                        currentPolygon.push(vec2.fromValues(currentPoint[0], nextY));
+                        currentPoint[1] = nextY;
                     }
                     break;
                 case 'z': //closePath
                     const firstPoint = currentPolygon[0];
-                    currentPolygon.push({ x: firstPoint.x, y: firstPoint.y });
+                    currentPolygon.push(vec2.clone(firstPoint));
                     points.push(currentPolygon);
                     currentPolygon = [];
-                    currentPoint.x = 0;
-                    currentPoint.y = 0;
+                    vec2.zero(currentPoint);
                     
                     break;
                 case 'c': //cubic bezier
                     while (pathParts.length) {
-                        const secondPoint = { x: parseFloat(pathParts.shift()!), y: parseFloat(pathParts.shift()!) },
-                            thirdPoint = { x: parseFloat(pathParts.shift()!), y: parseFloat(pathParts.shift()!) },
-                            fourthPoint = { x: parseFloat(pathParts.shift()!), y: parseFloat(pathParts.shift()!) };
+                        const secondPoint = vec2.fromValues(parseFloat(pathParts.shift()!), parseFloat(pathParts.shift()!));
+                        const thirdPoint = vec2.fromValues(parseFloat(pathParts.shift()!), parseFloat(pathParts.shift()!));
+                        const fourthPoint = vec2.fromValues(parseFloat(pathParts.shift()!), parseFloat(pathParts.shift()!));
                         
                         if (isRelative) {
-                            secondPoint.x += currentPoint.x;
-                            secondPoint.y += currentPoint.y;
-                            thirdPoint.x += currentPoint.x;
-                            thirdPoint.y += currentPoint.y;
-                            fourthPoint.x += currentPoint.x;
-                            fourthPoint.y += currentPoint.y;
+                            vec2.add(secondPoint, secondPoint, currentPoint);
+                            vec2.add(thirdPoint, thirdPoint, currentPoint);
+                            vec2.add(fourthPoint, fourthPoint, currentPoint);
                         }
                         
                         currentPolygon.push(...cubicBezierToPoints({
@@ -98,20 +93,17 @@ export const pathToPoints = (pathStr: string, splitBoundary: number): Array<Arra
                             p4: fourthPoint
                         }, splitBoundary));
 
-                        currentPoint.x = fourthPoint.x;
-                        currentPoint.y = fourthPoint.y;
+                        vec2.copy(currentPoint, fourthPoint);
                     }
                     break;
                 case 'q': //quadratic bezier
                     while (pathParts.length) {
-                        const secondPoint = { x: parseFloat(pathParts.shift()!), y: parseFloat(pathParts.shift()!) },
-                            thirdPoint = { x: parseFloat(pathParts.shift()!), y: parseFloat(pathParts.shift()!) };
+                        const secondPoint = vec2.fromValues(parseFloat(pathParts.shift()!), parseFloat(pathParts.shift()!));
+                        const thirdPoint = vec2.fromValues(parseFloat(pathParts.shift()!), parseFloat(pathParts.shift()!));
                         
                         if (isRelative) {
-                            secondPoint.x += currentPoint.x;
-                            secondPoint.y += currentPoint.y;
-                            thirdPoint.x += currentPoint.x;
-                            thirdPoint.y += currentPoint.y;
+                            vec2.add(secondPoint, secondPoint, currentPoint);
+                            vec2.add(thirdPoint, thirdPoint, currentPoint);
                         }
                         
                         currentPolygon.push(...quadraticBezierToPoints({
@@ -120,8 +112,7 @@ export const pathToPoints = (pathStr: string, splitBoundary: number): Array<Arra
                             p3: thirdPoint
                         }, splitBoundary));
 
-                        currentPoint.x = thirdPoint.x;
-                        currentPoint.y = thirdPoint.y;
+                        vec2.copy(currentPoint, thirdPoint);
                     }
                     break;
                 case 's': //cubic bezier (shortcut)

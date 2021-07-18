@@ -1,3 +1,4 @@
+import { vec2 } from "gl-matrix";
 import { cubicBezierToPoints } from "../geometry/cubicBezierToPoints";
 import { plotLines } from "../render/plotLines";
 
@@ -8,10 +9,10 @@ if (!g) {
   throw new Error('Could not get canvas');
 }
 
-const p1 = { x: 40, y: 40 };
-const p2 = { x: 100, y: 240 };
-const p3 = { x: 300, y: 80 };
-const p4 = { x: 260, y: 380 };
+const p1 = vec2.fromValues(40, 40);
+const p2 = vec2.fromValues(100, 240);
+const p3 = vec2.fromValues(300, 80);
+const p4 = vec2.fromValues(260, 380);
 
 const bezier = {
   p1,
@@ -37,8 +38,8 @@ const draw = () => {
   /*
   g.strokeStyle = "red";
   g.beginPath();
-  g.moveTo(bezier.p1.x, game.height - bezier.p1.y);
-  g.bezierCurveTo(bezier.p2.x, game.height - bezier.p2.y, bezier.p3.x, game.height - bezier.p3.y, bezier.p4.x, game.height - bezier.p4.y);
+  g.moveTo(bezier.p1[0], game.height - bezier.p1[1]);
+  g.bezierCurveTo(bezier.p2[0], game.height - bezier.p2[1], bezier.p3[0], game.height - bezier.p3[1], bezier.p4[0], game.height - bezier.p4[1]);
   g.stroke();
   */
 

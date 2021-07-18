@@ -1,5 +1,5 @@
 import { Aabb } from "../interfaces/Aabb";
 
 export const aabbContains = (aabb1: Aabb, aabb2: Aabb): boolean => {
-    return aabb1.min.x <= aabb2.min.x && aabb1.min.y <= aabb2.min.y && aabb1.max.x >= aabb2.max.x && aabb1.max.y >= aabb2.max.y;
+    return aabb1.min[0] <= aabb2.min[0] && aabb1.min[1] <= aabb2.min[1] && aabb1.max[0] >= aabb2.max[0] && aabb1.max[1] >= aabb2.max[1];
 };

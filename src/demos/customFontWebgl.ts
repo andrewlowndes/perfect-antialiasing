@@ -148,9 +148,9 @@ const start = async () => {
     //unfortunately we need to intepret each vertex individually in each triangle so we must duplicate the vertices
     for (const polygon of charPolygons) {
       for (const triangle of polygon) {
-        const v1 = [triangle.p1.x * scale + offsetX, 1.0 - triangle.p1.y * scale + offsetY];
-        const v2 = [triangle.p2.x * scale + offsetX, 1.0 - triangle.p2.y * scale + offsetY];
-        const v3 = [triangle.p3.x * scale + offsetX, 1.0 - triangle.p3.y * scale + offsetY];
+        const v1 = [triangle.p1[0] * scale + offsetX, 1.0 - triangle.p1[1] * scale + offsetY];
+        const v2 = [triangle.p2[0] * scale + offsetX, 1.0 - triangle.p2[1] * scale + offsetY];
+        const v3 = [triangle.p3[0] * scale + offsetX, 1.0 - triangle.p3[1] * scale + offsetY];
 
         currVertices.push(...v1, ...v2, ...v3);
         nextVertices.push(...v2, ...v3, ...v1);

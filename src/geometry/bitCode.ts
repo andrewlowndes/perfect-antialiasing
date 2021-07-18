@@ -11,11 +11,11 @@ import { Point } from "../interfaces/Point";
 export const bitCode = (p: Point, bbox: Aabb): number => {
     let code = 0;
   
-    if (p.x < bbox.min.x) code |= 1; // left
-    else if (p.x > bbox.max.x) code |= 2; // right
+    if (p[0] < bbox.min[0]) code |= 1; // left
+    else if (p[0] > bbox.max[0]) code |= 2; // right
   
-    if (p.y < bbox.min.y) code |= 4; // bottom
-    else if (p.y > bbox.max.y) code |= 8; // top
+    if (p[1] < bbox.min[1]) code |= 4; // bottom
+    else if (p[1] > bbox.max[1]) code |= 8; // top
   
     return code;
 };

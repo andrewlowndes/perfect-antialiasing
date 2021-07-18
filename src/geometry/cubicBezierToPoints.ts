@@ -1,10 +1,11 @@
+import { vec2 } from "gl-matrix";
 import { CubicBezier } from "../interfaces/CubicBezier";
 import { Point } from "../interfaces/Point";
 import { lerp } from "../maths/common";
 import { dot, lerp2, normalize, sub } from "../maths/point";
 
 export const cubicBezierToPoints = (bezier: CubicBezier, splitThreshold: number): Array<Point> => {
-  const points = [{ x: bezier.p1.x, y: bezier.p1.y }, { x: bezier.p4.x, y: bezier.p4.y }];
+  const points = [vec2.clone(bezier.p1), vec2.clone(bezier.p4)];
 
   const cubicBezierSplit = (bezier: CubicBezier, min: number, max: number, insertIndex: number, first = false) => {
     const time = lerp(min, max, 0.5);

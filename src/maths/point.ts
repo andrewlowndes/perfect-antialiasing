@@ -1,73 +1,73 @@
-import { Point } from "../interfaces/Point";
-import { clamp, lerp } from "./common";
+import { vec2 } from 'gl-matrix';
 
-export const clamp2 = (a: Point, min: Point, max: Point) => ({ x: clamp(a.x, min.x, max.x), y: clamp(a.y, min.y, max.y) });
-export const determinant2 = (p1: Point, p2: Point) => (p1.x * p2.y) - (p1.y * p2.x);
-export const equals = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
-export const scale = (p1: Point, a: number) => ({ x: a * p1.x, y: a * p1.y });
-export const multiply = (p1: Point, p2: Point) => ({ x: p2.x * p1.x, y: p2.y * p1.y });
-export const divide = (p1: Point, p2: Point) => ({ x: p1.x / p2.x, y: p1.y / p2.y });
-export const add = (p1: Point, p2: Point) => ({ x: p1.x + p2.x, y: p1.y + p2.y });
-export const adds = (p1: Point, a: number) => ({ x: p1.x + a, y: p1.y + a });
-export const sub = (p1: Point, p2: Point) => ({ x: p1.x - p2.x, y: p1.y - p2.y });
-export const floor = (p1: Point) => ({ x: Math.floor(p1.x), y: Math.floor(p1.y) });
-export const ceil = (p1: Point) => ({ x: Math.ceil(p1.x), y: Math.ceil(p1.y) });
-export const abs = (p1: Point) => ({ x: Math.abs(p1.x), y: Math.abs(p1.y) });
-export const sign = (p1: Point) => ({ x: Math.sign(p1.x), y: Math.sign(p1.y) });
-export const dot = (p1: Point, p2: Point) => p1.x * p2.x + p1.y * p2.y;
-export const equal = (p1: Point, p2: Point) => p1.x == p2.x && p1.y == p2.y;
-export const length = (p1: Point) => Math.sqrt(p1.x * p1.x + p1.y * p1.y);
+import { Point } from "../interfaces/Point";
+
+export const clamp2 = (a: Point, min: Point, max: Point) => {
+  const out = vec2.clone(a);
+  vec2.min(out, out, max);
+  vec2.max(out, out, min);
+  return out;
+};
+export const determinant2 = (p1: Point, p2: Point) => (p1[0] * p2[1]) - (p1[1] * p2[0]);
+export const equals = vec2.equals;
+export const scale = (p1: Point, a: number) => vec2.scale(vec2.create(), p1, a);
+export const multiply = (p1: Point, p2: Point) => vec2.multiply(vec2.create(), p1, p2);
+export const divide = (p1: Point, p2: Point) => vec2.divide(vec2.create(), p1, p2);
+export const add = (p1: Point, p2: Point) => vec2.add(vec2.create(), p1, p2);
+export const adds = (p1: Point, a: number) => vec2.fromValues(p1[0] + a, p1[1] + a);
+export const sub = (p1: Point, p2: Point) => vec2.sub(vec2.create(), p1, p2);
+export const floor = (p1: Point) => vec2.floor(vec2.create(), p1);
+export const ceil = (p1: Point) => vec2.ceil(vec2.create(), p1);
+export const abs = (p1: Point) => vec2.fromValues(Math.abs(p1[0]), Math.abs(p1[1]));
+export const sign = (p1: Point) => vec2.fromValues(Math.sign(p1[0]), Math.sign(p1[1]));
+export const dot = (p1: Point, p2: Point) => vec2.dot(p1, p2);
+export const length = (p1: Point) => vec2.length(p1);
 export const normalize = (p1: Point) => scale(p1, 1 / length(p1));
-export const lerp2 = (a: Point, b: Point, t: number) => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) });
+export const lerp2 = (a: Point, b: Point, t: number) => vec2.lerp(vec2.create(), a, b, t);
 
 //warning: mutates a
 export const toPrecision2 = (a: Point, amount: number) => {
-  a.x = parseFloat(a.x.toPrecision(amount));
-  a.y = parseFloat(a.y.toPrecision(amount));
+  a[0] = parseFloat(a[0].toPrecision(amount));
+  a[1] = parseFloat(a[1].toPrecision(amount));
   return a;
 };
 
-export const min2 = (obj: Point, ...objs: Array<Point>) => {
-  const result: Point = {
-    x: obj.x,
-    y: obj.y
-  };
+export const min2 = (...objs: Array<Point>) => {
+  const [first, ...rest] = objs;
+  const result = vec2.clone(first);
 
-  objs.forEach((obj) => {
-    result.x = Math.min(result.x, obj.x);
-    result.y = Math.min(result.y, obj.y);
+  rest.forEach((obj) => {
+    vec2.min(result, result, obj);
   });
 
   return result;
 };
 
-export const max2 = (obj: Point, ...objs: Array<Point>) => {
-  const result: Point = {
-    x: obj.x,
-    y: obj.y
-  };
+export const max2 = (...objs: Array<Point>) => {
+  const [first, ...rest] = objs;
+  const result = vec2.clone(first);
 
-  objs.forEach((obj) => {
-    result.x = Math.max(result.x, obj.x);
-    result.y = Math.max(result.y, obj.y);
+  rest.forEach((obj) => {
+    vec2.max(result, result, obj);
   });
 
   return result;
 };
 
-export const avg = (arr: Array<Point>) => {
-  const sum = arr.reduce<Point>((acc, item) => {
-    acc.x += item.x;
-    acc.y += item.y;
-    return acc;
-  }, { x: 0, y: 0 });
+export const avg = (...objs: Array<Point>) => {
+  const result = vec2.create();
 
-  sum.x /= arr.length;
-  sum.y /= arr.length;
+  if (objs.length) {
+    objs.forEach((obj) => {
+      vec2.add(result, result, obj);
+    });
+  
+    vec2.scale(result, result, 1 / objs.length);
+  }
 
-  return sum;
+  return result;
 };
 
 export const inRange = (p1: Point, min: Point, max: Point) => {
-  return !(p1.x > max.x || p1.x < min.x || p1.y > max.y || p1.y < min.y);
+  return !(p1[0] > max[0] || p1[0] < min[0] || p1[1] > max[1] || p1[1] < min[1]);
 };
