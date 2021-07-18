@@ -5,12 +5,23 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <script>
-            window.onload = function() {
-                const appScript = document.createElement('script');
-                appScript.defer = true;
-                appScript.async = true;
-                appScript.src = "quadratic_bezier_simplification.js";
-                document.head.appendChild(appScript);
+            const load = (srcs) => new Promise((resolve, reject) => {
+                return srcs.map((src) => {
+                    const script = document.createElement('script');
+                    Object.assign(script, {
+                        defer: true,
+                        async: true,
+                        src: src,
+                        onload: resolve,
+                        onerror: reject
+                    });
+                    document.head.appendChild(script);
+                    return script;
+                });
+            });
+
+            window.onload = async () => {
+                await load(["quadratic_bezier_simplification.js"]);
             };
         </script>
     </head>

@@ -34,12 +34,24 @@
         </style>
 
         <script>
-            window.onload = function() {
-                const appScript = document.createElement('script');
-                appScript.defer = true;
-                appScript.async = true;
-                appScript.src = "custom_font.js";
-                document.head.appendChild(appScript);
+            const load = (srcs) => new Promise((resolve, reject) => {
+                return srcs.map((src) => {
+                    const script = document.createElement('script');
+                    Object.assign(script, {
+                        defer: true,
+                        async: true,
+                        src: src,
+                        onload: resolve,
+                        onerror: reject
+                    });
+                    document.head.appendChild(script);
+                    return script;
+                });
+            });
+
+            window.onload = async () => {
+                await load(["shared.js"]);
+                await load(["custom_font.js"]);
             };
         </script>
     </head>
