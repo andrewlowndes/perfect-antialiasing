@@ -1,92 +1,79 @@
-import earcut from 'earcut';
-
+import earcut from "earcut";
 import { Point } from "../interfaces/Point";
-import { Triangle } from '../interfaces/Triangle';
-import { Aabb } from '../interfaces/Aabb';
-
+import { Triangle } from "../interfaces/Triangle";
+import { Aabb } from "../interfaces/Aabb";
 import { aabb } from "../aabb/aabb";
-import { aabbContains } from "../aabb/aabbContains";
-import { aabbIntersect } from "../aabb/aabbIntersect";
-import { combineAabbs } from "../aabb/combineAabbs";
-import { sub } from '../maths/point';
+import { inside, sub } from "../maths/point";
 import { polygonAreaSigned } from "./polygonArea";
 
 interface Group {
   points: Array<Point>;
   aabb: Aabb;
+  area: number;
+  children: Array<Group>;
 }
 
-export const pointsToPolygons = (points: Array<Array<Point>>): Array<Array<Triangle>> => {
-  let solidGroups: Array<Group> = [];
-  let holeGroups: Array<Group> = [];
+export const pointsToPolygons = (
+  points: Array<Array<Point>>
+): Array<Array<Triangle>> => {
+  let groups: Array<Group> = points.map((pointsArr) => ({
+    points: pointsArr,
+    aabb: aabb(...pointsArr),
+    area: polygonAreaSigned(pointsArr),
+    children: [],
+  }));
 
-  points.forEach((pointsArr) => {
-    const group = {
-      points: pointsArr,
-      aabb: aabb(...pointsArr)
-    };
+  groups.sort((a, b) => Math.abs(b.area) - Math.abs(a.area));
 
-    if (polygonAreaSigned(pointsArr) > 0) {
-      solidGroups.push(group);
+  const root = [];
+
+  for (let i = 0; i < groups.length; ++i) {
+    let parent = null;
+    for (let j = i - 1; j >= 0; --j) {
+      if (
+        inside(groups[j].points, groups[i].points[0]) &&
+        groups[i].area * groups[j].area < 0
+      ) {
+        parent = groups[j];
+        break;
+      }
+    }
+    if (parent) {
+      parent.children.push(groups[i]);
     } else {
-      holeGroups.push(group);
-    }
-  });
-
-  //swap the groups if there are only holes
-  if (!solidGroups.length) {
-    const temp = holeGroups;
-    holeGroups = solidGroups;
-    solidGroups = temp;
-  } else if (holeGroups.length) {
-    //determine wether the solid groups or the hole groups is on the outside - flip if needed to solid groups are on the outside
-    const solidAabb = combineAabbs(solidGroups.map((group) => group.aabb))!;
-    const holeAabb = combineAabbs(holeGroups.map((group) => group.aabb))!;
-
-    if (aabbContains(holeAabb, solidAabb)) {
-      const temp = holeGroups;
-      holeGroups = solidGroups;
-      solidGroups = temp;
+      root.push(groups[i]);
     }
   }
 
-  //nothing to render? - then we are done
   const polygons: Array<Array<Triangle>> = [];
+  let triangles: Array<Triangle> = [];
 
-  if (!solidGroups.length) {
-    return polygons;
-  }
+  const process = (group: Group) => {
+    const coords: number[] = [];
+    const holes: number[] = [];
+    const points: Point[] = [];
 
-  //we will create a polygon for each of the solid groups of points
-  solidGroups.forEach((solidGroup) => {
-    //convert into a format suitable for triangulation
-    const vertexData: Array<number> = [];
-    const holeIndices: Array<number> = [];
-    const allPoints: Array<Point> = [];
-
-    allPoints.push(...solidGroup.points);
-    solidGroup.points.map((point) => {
-      vertexData.push(point[0]);
-      vertexData.push(point[1]);
+    group.points.forEach((point) => {
+      coords.push(...point);
+      points.push(point);
     });
 
-    holeGroups.filter((holeGroup) => aabbIntersect(holeGroup.aabb, solidGroup.aabb)).forEach((holeGroup) => {
-      allPoints.push(...holeGroup.points);
-      holeIndices.push(vertexData.length / 2);
+    group.children.forEach((child) => {
+      child.children.forEach(process);
 
-      holeGroup.points.forEach((holePoint) => {
-        vertexData.push(holePoint[0]);
-        vertexData.push(holePoint[1]);
+      holes.push(coords.length / 2);
+      child.points.forEach((point) => {
+        coords.push(...point);
+        points.push(point);
       });
     });
 
-    const triangleIndices = earcut(vertexData, holeIndices);
+    const indices = earcut(coords, holes);
 
-    const triangles: Array<Triangle> = [];
-    for (let i = 0; i < triangleIndices.length; i += 3) {
-      let p1 = allPoints[triangleIndices[i]];
-      const p2 = allPoints[triangleIndices[i + 1]];
-      let p3 = allPoints[triangleIndices[i + 2]];
+    for (let i = 0; i < indices.length; i += 3) {
+      const p1 = points[indices[i + 0]];
+      const p2 = points[indices[i + 1]];
+      const p3 = points[indices[i + 2]];
 
       triangles.push({
         p1,
@@ -99,14 +86,16 @@ export const pointsToPolygons = (points: Array<Array<Point>>): Array<Array<Trian
         colour: {
           x: Math.round(Math.random() * 255),
           y: Math.round(Math.random() * 255),
-          z: Math.round(Math.random() * 255)
-        }
+          z: Math.round(Math.random() * 255),
+        },
       });
     }
+  };
 
-    if (triangles.length) {
-      polygons.push(triangles);
-    }
+  root.forEach((group) => {
+    process(group);
+    polygons.push(triangles);
+    triangles = [];
   });
 
   return polygons;
