@@ -1,5 +1,5 @@
-import { Point } from "../interfaces/Point";
-import { determinant2 } from "../maths/point";
+import type { Point } from '../interfaces/Point';
+import { determinant2 } from '../maths/point';
 
 export const polygonAreaSigned = (points: Array<Point>): number => {
     if (!points.length) {
@@ -16,8 +16,8 @@ export const polygonAreaSigned = (points: Array<Point>): number => {
     area += determinant2(points[lastIndex], points[0]);
 
     return area / 2;
-}
+};
 
 export const polygonArea = (points: Array<Point>): number => {
     return Math.abs(polygonAreaSigned(points));
-}
+};

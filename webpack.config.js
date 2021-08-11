@@ -4,7 +4,6 @@ const buildPath = path.resolve(__dirname, './dist');
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.ts',
   devtool: 'inline-source-map',
   entry: {
     'conservative_rasterisation': {

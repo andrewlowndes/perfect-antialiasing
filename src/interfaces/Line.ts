@@ -1,8 +1,6 @@
 import type { Point } from './Point';
 
-export interface CubicBezier {
+export interface Line {
     p1: Point;
     p2: Point;
-    p3: Point;
-    p4: Point;
 }

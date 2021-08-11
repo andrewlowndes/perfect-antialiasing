@@ -1,5 +1,5 @@
-import { Aabb } from "../interfaces/Aabb";
-import { max2, min2 } from "../maths/point";
+import { Aabb } from '../interfaces/Aabb';
+import { max2, min2 } from '../maths/point';
 
 export const combineAabbs = (aabbs: Array<Aabb>): Aabb | undefined => {
     if (!aabbs.length) {

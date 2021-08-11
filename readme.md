@@ -6,10 +6,10 @@ GPU Rendering of vector graphics at a sub-pixel accuracy:
 1. Triangulate curves into triangles
 2. Render each triangle using conservative rasterisation
 3. For each fragment:
-  1. Perform a triangle/box intersection, creating a polygon
-  2. Sum the areas of the triangles in the polygon
-  3. Divide the sum by the fragment area to give a percentage coverage
-  4. Continue for all triangles, additively blending
+   1. Perform a triangle/box intersection, creating a polygon
+   2. Sum the areas of the triangles in the polygon
+   3. Divide the sum by the fragment area to give a percentage coverage
+   4. Continue for all triangles, additively blending
 
 ## Preview
 ![Preview](/images/preview.png)
@@ -35,11 +35,11 @@ Visit https://andrewlowndes.github.io/perfect-antialiasing/dist/ to see a set of
     - [x] Custom font rendering
     - [x] 3D Triangle
     - [ ] 3D scene
-    - [ ] Tesselation alternative for WebGL
-    - [ ] Instancing alternative for WebGL (vertex texture / index buffers per char)
+    - [ ] Screen-space tesselation
+    - [ ] Instancing
     - [ ] Performance test
-- [ ] Vulcan
-    - [ ] Cubic/quadratic bezier tesselation via tesselation/geometry shader
+- [ ] Vulkan
+    - [ ] Screen-space tesselation via geometry shader
     - [ ] Conservative rasterisation using gpu extensions
     - [ ] Instancing
     - [ ] Performance test
@@ -52,8 +52,8 @@ Visit https://andrewlowndes.github.io/perfect-antialiasing/dist/ to see a set of
 - Anti-aliasing in games (need to assess overhead of conservative rasterisation and the alpha computation in the fragment shader)
 - Font rendering (still relies on triangulation - use screen-space in tesselation shader for resolution independent rendering)
 
-## Notes
-Required for optimal performance in Vulkan Demo:
-1. Conservative rasterisation
-2. Tesselation / geometry shaders
-3. Instancing extensions
+## Development
+Install VS Code and the following extensions:
+- EditorConfig for VS Code
+- ESLint
+- Prettier
