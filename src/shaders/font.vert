@@ -1,5 +1,6 @@
 uniform vec2 screenSize;
 uniform float offset;
+uniform mat4 modelViewProjection;
 
 attribute float index;
 attribute vec2 pos;
@@ -17,27 +18,43 @@ varying vec2 e3;
 
 const float delta = 0.0000001;
 
+vec2 posToClipSpace(vec2 pos) {
+    vec4 proj_pos = modelViewProjection * vec4(pos, 0.0, 1.0);
+    return proj_pos.xy / proj_pos.w;
+}
+
+vec2 clipToScreenSpace(vec2 pos) {
+    return screenSize.xy * (pos / 2.0 + 0.5);
+}
+
 void main(void) {
+    vec2 clipPos = posToClipSpace(pos);
+    vec2 clipNextPos = posToClipSpace(nextPos);
+    vec2 clipPrevPos = posToClipSpace(prevPos);
+
     // determine a new vertex position such that it covers the neighbour pixel centers
-    vec2 a = normalize(pos - prevPos);
-    vec2 b = normalize(pos - nextPos);
+    vec2 a = normalize(clipPos - clipPrevPos);
+    vec2 b = normalize(clipPos - clipNextPos);
     float angle = sqrt((1.0 - dot(a, b)) / 2.0);
 
     vec2 vecPos;
     if (abs(angle) > delta) {
-        vecPos = pos + normalize(a + b) * (offset / angle);
+        vecPos = clipPos + normalize(a + b) * (offset / angle);
     } else {
-        vecPos = pos;
+        vecPos = clipPos;
     }
 
-    // compute a bounding box and pass to the fragment shader so we dont render outside the inflated triangle bounds
-    bounds = screenSize.xyxy * (vec4(min(min(pos, prevPos), nextPos), max(max(pos, prevPos), nextPos)) / 2.0 + 0.5) + vec4(-0.5, -0.5, 0.5, 0.5);
-
     //translate the position into screen space
-    vec2 screenPos = screenSize.xy * (pos / 2.0 + 0.5);
-    vec2 screenPrevPos = screenSize.xy * (prevPos / 2.0 + 0.5);
-    vec2 screenNextPos = screenSize.xy * (nextPos / 2.0 + 0.5);
-    
+    vec2 screenPos = clipToScreenSpace(clipPos);
+    vec2 screenNextPos = clipToScreenSpace(clipNextPos);
+    vec2 screenPrevPos = clipToScreenSpace(clipPrevPos);
+
+    // compute a bounding box and pass to the fragment shader so we dont render outside the inflated triangle bounds
+    bounds = vec4(
+        min(min(screenPos, screenNextPos), screenPrevPos) - 0.5,
+        max(max(screenPos, screenNextPos), screenPrevPos) + 0.5
+    );
+
     //prevent interpolation by ensuring the same positions are sent each vertex in the same triangle
     if (int(index) == 0) {
         vPrevPos = screenPos;

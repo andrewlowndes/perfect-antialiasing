@@ -1,25 +1,63 @@
 import { load } from 'opentype.js';
+import { mat4, vec3 } from 'gl-matrix';
+
 import { pathToPoints } from '../geometry/pathToPoints';
 import { pointsToPolygons } from '../geometry/pointsToPolygon';
+import { subscribeDrag } from '../utils/subscribeDrag';
 
 import vertCode from '../shaders/font.vert';
 import fragCode from '../shaders/font.frag';
 
 const vertexSize = 2;
 
+let canvas: HTMLCanvasElement;
 let gl: WebGLRenderingContext;
 let vertices: Float32Array;
 let nextPos: Float32Array;
 let prevPos: Float32Array;
 let indexes: Float32Array;
 let posBuffer: WebGLBuffer;
+let shaderProgram: WebGLShader;
 let nextPosBuffer: WebGLBuffer;
 let prevPosBuffer: WebGLBuffer;
 let indexBuffer: WebGLBuffer;
+let modelViewProjectionUniform: WebGLUniformLocation;
+let screenSizeUniform: WebGLUniformLocation;
+
+const translate = vec3.fromValues(0, 0, 0);
+const scale = vec3.fromValues(20, 20, 1);
+
+const modelMatrix = mat4.create();
+const viewMatrix = mat4.create();
+const modelViewMatrix = mat4.create();
+const projectionMatrix = mat4.create();
+const modelViewProjectionMatrix = mat4.create();
+
+const resize = () => {
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+
+    gl.viewport(0, 0, canvas.width, canvas.height);
+};
 
 const loadGL = () => {
-    const canvas = document.getElementById('canvas1') as HTMLCanvasElement;
+    canvas = document.getElementById('canvas1') as HTMLCanvasElement;
     gl = canvas.getContext('webgl', { antialias: false, premultipliedAlpha: false })!;
+
+    //allow the graph to be zoomed and moved using the mouse
+    canvas.addEventListener('wheel', (e: WheelEvent) => {
+        e.preventDefault();
+        scale[0] *= e.deltaY < 0 ? 2.0 : 0.5;
+        scale[1] = scale[0];
+    });
+
+    subscribeDrag({
+        elem: canvas,
+        ondrag: (delta) => {
+            translate[0] += delta.x;
+            translate[1] += delta.y;
+        }
+    });
 
     const offset = Math.sqrt(2) / canvas.width;
 
@@ -57,7 +95,7 @@ const loadGL = () => {
         throw new Error(String(gl.getShaderInfoLog(fragShader)));
     }
 
-    const shaderProgram = gl.createProgram()!;
+    shaderProgram = gl.createProgram()!;
     gl.attachShader(shaderProgram, vertShader);
     gl.attachShader(shaderProgram, fragShader);
     gl.linkProgram(shaderProgram);
@@ -93,12 +131,11 @@ const loadGL = () => {
     const offsetUniform = gl.getUniformLocation(shaderProgram, 'offset');
     gl.uniform1f(offsetUniform, offset);
 
-    const screenSizeUniform = gl.getUniformLocation(shaderProgram, 'screenSize');
-    gl.uniform2fv(screenSizeUniform, [canvas.width, canvas.height]);
+    screenSizeUniform = gl.getUniformLocation(shaderProgram, 'screenSize')!;
+    modelViewProjectionUniform = gl.getUniformLocation(shaderProgram, 'modelViewProjection')!;
 
     //init
     gl.clearColor(0.0, 0.0, 0.0, 0.0);
-    gl.viewport(0, 0, canvas.width, canvas.height);
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE);
@@ -108,25 +145,38 @@ const loadGL = () => {
 const drawGL = () => {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    //may as well use drawArrays here since the vertices has had to be duplicated
+    mat4.identity(modelMatrix);
+    mat4.scale(modelMatrix, modelMatrix, [1, -1, 1]);
+    mat4.translate(modelMatrix, modelMatrix, translate);
+    mat4.scale(modelMatrix, modelMatrix, scale);
+    mat4.translate(modelMatrix, modelMatrix, [-10, 0, 0]);
+
+    mat4.lookAt(viewMatrix, [0, 0, 1], [0, 0, 0], [0, 1, 0]);
+    mat4.invert(viewMatrix, viewMatrix);
+
+    const halfWidth = canvas.width / 2;
+    const halfHeight = canvas.height / 2;
+    mat4.ortho(projectionMatrix, -halfWidth, halfWidth, -halfHeight, halfHeight, 1, 10000);
+
+    mat4.multiply(modelViewMatrix, viewMatrix, modelMatrix);
+    mat4.multiply(modelViewProjectionMatrix, projectionMatrix, modelViewMatrix);
+
+    gl.useProgram(shaderProgram);
+
+    gl.uniform2fv(screenSizeUniform, [canvas.width, canvas.height]);
+    gl.uniformMatrix4fv(modelViewProjectionUniform, false, modelViewProjectionMatrix);
+
+    //may as well use drawArrays here since the vertices have had to be duplicated
     gl.drawArrays(gl.TRIANGLES, 0, vertices.length / vertexSize);
-    //gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
 
     requestAnimationFrame(drawGL);
 };
 
 const start = async () => {
     const font = await load('./media/Timeless.ttf');
-
-    const fontSize = 128;
-    const text = 'Test';
-
-    const scale = 1.0 / fontSize;
-    const offsetX = -1.0;
-    const offsetY = -0.5 - scale;
-
     const splitBoundary = -0.99;
-    const fontWidth = fontSize; //18;
+    const fontSize = 12;
+    const text = 'Test';
 
     const myChars = font.stringToGlyphs(text);
 
@@ -138,23 +188,19 @@ const start = async () => {
     const indexesRaw: Array<number> = [];
 
     for (const myChar of myChars) {
-        const aPath = myChar.getPath(charPos, 100, fontSize);
-        const pointsGroups = pathToPoints(aPath.toPathData(5), splitBoundary);
+        const aPath = myChar.getPath(charPos, 0, fontSize);
+        const pointsGroups = pathToPoints(aPath.toPathData(3), splitBoundary);
 
-        charPos += (myChar.advanceWidth / 1000) * fontWidth;
+        charPos += (myChar.advanceWidth / 1000) * fontSize;
 
         const charPolygons = pointsToPolygons(pointsGroups);
 
         //unfortunately we need to intepret each vertex individually in each triangle so we must duplicate the vertices
         for (const polygon of charPolygons) {
-            for (const triangle of polygon) {
-                const v1 = [triangle.p1[0] * scale + offsetX, 1.0 - triangle.p1[1] * scale + offsetY];
-                const v2 = [triangle.p2[0] * scale + offsetX, 1.0 - triangle.p2[1] * scale + offsetY];
-                const v3 = [triangle.p3[0] * scale + offsetX, 1.0 - triangle.p3[1] * scale + offsetY];
-
-                currVertices.push(...v1, ...v2, ...v3);
-                nextVertices.push(...v2, ...v3, ...v1);
-                prevVertices.push(...v3, ...v1, ...v2);
+            for (const { p1, p2, p3 } of polygon) {
+                currVertices.push(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+                nextVertices.push(p2[0], p2[1], p3[0], p3[1], p1[0], p1[1]);
+                prevVertices.push(p3[0], p3[1], p1[0], p1[1], p2[0], p2[1]);
                 indexesRaw.push(0, 1, 2);
             }
         }
@@ -166,6 +212,8 @@ const start = async () => {
     indexes = new Float32Array(indexesRaw);
 
     loadGL();
+    window.onresize = resize;
+    resize();
     drawGL();
 };
 
