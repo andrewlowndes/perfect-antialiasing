@@ -1,17 +1,18 @@
+#version 300 es
+
 precision highp float;
 
-uniform vec2 screenSize;
+flat in vec4 bounds;
+flat in vec2 vPrevPos;
+flat in vec2 vPos;
+flat in vec2 vNextPos;
+flat in vec2 e1;
+flat in vec2 e2;
+flat in vec2 e3;
 
-//these should be flat (no interpolation) - not supported in webgl 1.0
-varying vec2 vPrevPos;
-varying vec2 vPos;
-varying vec2 vNextPos;
-varying vec2 e1;
-varying vec2 e2;
-varying vec2 e3;
-varying vec4 bounds;
+out vec4 outColor;
 
-const float delta = 0.000001;
+const float EPSILON = 0.000001;
 
 vec4 sort(vec4 val) {
   float a = min(val.x, val.y);
@@ -19,12 +20,10 @@ vec4 sort(vec4 val) {
   float c = min(val.z, val.w);
   float d = max(val.z, val.w);
 
-  float e = min(b, c);
-  float f = max(b, c);
-  float h = max(a, e);
-  float i = min(f, d);
+  float h = max(a, min(b, c));
+  float i = min(d, max(b, c));
 
-  return vec4(min(a, e), min(h, i), max(h, i), max(f, d));
+  return vec4(min(a, c), min(h, i), max(h, i), max(b, d));
 }
 
 float det2(vec2 p1, vec2 p2) {
@@ -32,14 +31,14 @@ float det2(vec2 p1, vec2 p2) {
 }
 
 float timeAtPos(float startPos, float dir, float newPos) {
-  if (abs(dir) < delta) {
+  if (abs(dir) < EPSILON) {
       return 0.0;
   }
 
   return clamp((newPos - startPos) / dir, 0.0, 1.0);
 }
 
-bool squareInTriangle(vec2 minPos, vec2 maxPos, vec2 p1, vec2 p2, vec2 p3){
+bool squareContainedInTriangle(vec2 minPos, vec2 maxPos, vec2 p1, vec2 p2, vec2 p3) {
     vec2 a = p2 - p1;
     vec2 b = p3 - p1;
     float denom = det2(a, b);
@@ -80,18 +79,27 @@ bool squareInTriangle(vec2 minPos, vec2 maxPos, vec2 p1, vec2 p2, vec2 p3){
 }
 
 void main(void) {
+  vec2 pixelMin = floor(gl_FragCoord.xy);
+  vec2 pixelMax = pixelMin + 1.0;
+
+  if (
+      (vPos.x < pixelMin.x && vPrevPos.x < pixelMin.x && vNextPos.x < pixelMin.x) ||
+      (vPos.x > pixelMax.x && vPrevPos.x > pixelMax.x && vNextPos.x > pixelMax.x) ||
+      (vPos.y < pixelMin.y && vPrevPos.y < pixelMin.y && vNextPos.y < pixelMin.y) ||
+      (vPos.y > pixelMax.y && vPrevPos.y > pixelMax.y && vNextPos.y > pixelMax.y)
+  ) {
+      discard;
+  }
+
   //remove conservative rasterisation overdraw
-  if (gl_FragCoord.x < bounds.x || gl_FragCoord.y < bounds.y || gl_FragCoord.x > bounds.z || gl_FragCoord.y > bounds.w) {
+  if (pixelMax.x < bounds.x || pixelMax.y < bounds.y || pixelMin.x > bounds.z || pixelMin.y > bounds.w) {
       discard;
   }
 
   float alphaAmount = 1.0;
 
   //check if the pixel is fully enclosed
-  if (!squareInTriangle(floor(gl_FragCoord.xy), floor(gl_FragCoord.xy + 1.0), vPos, vPrevPos, vNextPos)) {
-    vec2 pixelMin = floor(gl_FragCoord.xy);
-    vec2 pixelMax = ceil(gl_FragCoord.xy);
-
+  if (!squareContainedInTriangle(pixelMin, pixelMax, vPrevPos, vPos, vNextPos)) {
     //intersect the triangle with the pixel bounds
     vec4 firstLineTs = sort(vec4(
         timeAtPos(vPrevPos.x, e1.x, pixelMin.x),
@@ -129,15 +137,16 @@ void main(void) {
     vec2 p11 = clamp(vNextPos + e3 * thirdLineTs.z, pixelMin, pixelMax);
     vec2 p12 = clamp(vNextPos + e3 * thirdLineTs.w, pixelMin, pixelMax);
 
+
     //compute the area under the formed polygon
-    float polygonArea = (
+    float polygonArea = abs((
         det2(p1, p2) + det2(p2, p3) + det2(p3, p4) + det2(p4, p5) +
         det2(p5, p6) + det2(p6, p7) + det2(p7, p8) + det2(p8, p9) + 
         det2(p9, p10) + det2(p10, p11) + det2(p11, p12) + det2(p12, p1)
-    ) / 2.0;
+    ) / 2.0);
 
-    alphaAmount = clamp(abs(polygonArea), 0.0, 1.0);
+    alphaAmount = clamp(polygonArea, 0.0, 1.0);
   }
 
-  gl_FragColor = vec4(1.0, 0.0, 0.0, alphaAmount);
+  outColor = vec4(1.0, 0.0, 0.0, alphaAmount);
 }

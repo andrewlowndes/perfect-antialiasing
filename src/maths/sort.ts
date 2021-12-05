@@ -4,10 +4,9 @@ export const sort = (t1: number, t2: number, t3: number, t4: number): [number, n
     const b = Math.max(t1, t2);
     const c = Math.min(t3, t4);
     const d = Math.max(t3, t4);
-    const e = Math.min(b, c);
-    const f = Math.max(b, c);
-    const h = Math.max(a, e);
-    const i = Math.min(f, d);
 
-    return [Math.min(a, e), Math.min(h, i), Math.max(h, i), Math.max(f, d)];
+    const h = Math.max(a, Math.min(b, c));
+    const i = Math.min(d, Math.max(b, c));
+
+    return [Math.min(a, c), Math.min(h, i), Math.max(h, i), Math.max(b, d)];
 };

@@ -57,3 +57,9 @@ Install VS Code and the following extensions:
 - EditorConfig for VS Code
 - ESLint
 - Prettier
+
+## References
+
+Vertex-based conservative rasterisation based off algorithm 2 from GPU Gems 2 Chapter 43 (https://developer.nvidia.com/gpugems/gpugems2/part-v-image-oriented-computing/chapter-42-conservative-rasterization)
+
+

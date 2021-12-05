@@ -42,6 +42,10 @@ module.exports = {
       import: './src/demos/triangleWebgl.ts',
       dependOn: 'shared'
     },
+    'inflated_triangle': {
+      import: './src/demos/inflatedTriangle.ts',
+      dependOn: 'shared'
+    },
     shared: ['earcut', 'opentype.js', 'gl-matrix'],
   },
   output: {
@@ -64,8 +68,6 @@ module.exports = {
     extensions: [ '.tsx', '.ts', '.js', '.html' ]
   },
   devServer: {
-    contentBase: buildPath,
-    injectClient: false,
-    injectHot: false
+    static: [buildPath]
   }
 };

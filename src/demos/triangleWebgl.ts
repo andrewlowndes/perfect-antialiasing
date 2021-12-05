@@ -18,8 +18,6 @@ const load = () => {
     const canvas = document.getElementById('canvas1') as HTMLCanvasElement;
     gl = canvas.getContext('webgl2', { antialias: false, premultipliedAlpha: false })!;
 
-    const offset = Math.sqrt(2) / canvas.width;
-
     const vertices = new Float32Array([1, -1, 0, 0, 1, 0, -1, -1, 0]);
     const nextPos = new Float32Array([0, 1, 0, -1, -1, 0, 1, -1, 0]);
     const prevPos = new Float32Array([-1, -1, 0, 1, -1, 0, 0, 1, 0]);
@@ -70,9 +68,6 @@ const load = () => {
     gl.bindBuffer(gl.ARRAY_BUFFER, nextPosBuffer);
     gl.vertexAttribPointer(nextPosAttr, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(nextPosAttr);
-
-    const offsetUniform = gl.getUniformLocation(shaderProgram, 'offset');
-    gl.uniform1f(offsetUniform, offset);
 
     const screenSizeUniform = gl.getUniformLocation(shaderProgram, 'screenSize');
     gl.uniform2fv(screenSizeUniform, [canvas.width, canvas.height]);

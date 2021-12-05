@@ -93,7 +93,7 @@ const draw2D = () => {
     }
 };
 
-const gl = canvas.getContext('webgl', { antialias: false });
+const gl = canvas.getContext('webgl2', { antialias: false });
 
 if (!gl) {
     throw new Error('Could not initialise WebGL :(');
@@ -115,10 +115,6 @@ gl.bufferData(gl.ARRAY_BUFFER, prevPos, gl.DYNAMIC_DRAW);
 const uvBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
-
-const indexBuffer = gl.createBuffer();
-gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 
 // Create a vertex shader object
 const vertShader = gl.createShader(gl.VERTEX_SHADER)!;
@@ -173,10 +169,8 @@ gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
 gl.vertexAttribPointer(uvAttr, 3, gl.FLOAT, false, 0, 0);
 gl.enableVertexAttribArray(uvAttr);
 
-const offsetUniform = gl.getUniformLocation(shaderProgram, 'offset');
-gl.uniform1f(offsetUniform, Math.sqrt(2) / canvas.width);
-
 const screenSizeUniform = gl.getUniformLocation(shaderProgram, 'screenSize');
+
 gl.uniform2fv(screenSizeUniform, [canvas.width, canvas.height]);
 
 //init
@@ -198,8 +192,7 @@ const drawGL = () => {
     gl.bindBuffer(gl.ARRAY_BUFFER, prevPosBuffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, prevPos);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 };
 
 //animate the top vertex between -1 and 1 and trigger to redraw

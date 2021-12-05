@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+    <style>
+        #inflateAmount {
+            display: block;
+            width: 800px;
+        }
+    </style>
     <script>
       const load = (srcs) => new Promise((resolve, reject) => {
           return srcs.map((src) => {
@@ -22,13 +28,14 @@
 
       window.onload = async () => {
           await load(["shared.js"]);
-          await load(["single_cell.js"]);
+          await load(["inflated_triangle.js"]);
       };
   </script>
   </head>
   <body>
-    <h2>Single pixel / triangle area computation</h2>
-    <p>Scroll the mouse to change the virtual pixel size, move the mouse around to change the position.</p>
-    <canvas id="game" width="940" height="940" style="border: 1px solid black;"></canvas>
+    <h2>Inflated triangle</h2>
+    <p>A cpu version of determining new triangle coordinates by inflating an existing triangle</p>
+    <canvas id="game" width="800" height="600" style="border: 1px solid black;"></canvas>
+    <input type="range" id="inflateAmount" min="0" max="100" value="0" step="1" />
   </body>
 </html>
