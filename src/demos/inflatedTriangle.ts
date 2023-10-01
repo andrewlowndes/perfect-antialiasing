@@ -1,7 +1,7 @@
 import { vec2 } from 'gl-matrix';
 
 import type { Triangle } from '../interfaces/Triangle';
-import { add,  avg, dot, max2, min2, normalize, scale, sub } from '../maths/point';
+import { add, avg, dot, max2, min2, normalize, scale, sub } from '../maths/point';
 import { polygonPath } from '../render/polygonPath';
 
 const inflateAmountDom = document.getElementById('inflateAmount') as HTMLInputElement;
@@ -69,7 +69,6 @@ const draw = () => {
         return add(point, scale(normal, inflateAmount / angle));
     });
 
-
     g.clearRect(0, 0, game.width, game.height);
 
     //draw the original triangle
@@ -89,23 +88,27 @@ const draw = () => {
     const maxPos = max2(...triangle.points!);
 
     g.strokeStyle = 'blue';
-    g.strokeRect(minPos[0] - inflateAmount, g.canvas.height - maxPos[1] - inflateAmount, maxPos[0] - minPos[0] + inflateAmount*2, maxPos[1] - minPos[1] + inflateAmount*2);
-
+    g.strokeRect(
+        minPos[0] - inflateAmount,
+        g.canvas.height - maxPos[1] - inflateAmount,
+        maxPos[0] - minPos[0] + inflateAmount * 2,
+        maxPos[1] - minPos[1] + inflateAmount * 2
+    );
 
     //draw some balls on the vertices for verification
     g.strokeStyle = 'orange';
     g.beginPath();
-    g.arc(triangle.p1[0], g.canvas.height - triangle.p1[1], inflateAmount, 0, Math.PI*2);
+    g.arc(triangle.p1[0], g.canvas.height - triangle.p1[1], inflateAmount, 0, Math.PI * 2);
     g.stroke();
 
     g.beginPath();
-    g.arc(triangle.p2[0], g.canvas.height - triangle.p2[1], inflateAmount, 0, Math.PI*2);
+    g.arc(triangle.p2[0], g.canvas.height - triangle.p2[1], inflateAmount, 0, Math.PI * 2);
     g.stroke();
 
     g.beginPath();
-    g.arc(triangle.p3[0], g.canvas.height - triangle.p3[1], inflateAmount, 0, Math.PI*2);
+    g.arc(triangle.p3[0], g.canvas.height - triangle.p3[1], inflateAmount, 0, Math.PI * 2);
     g.stroke();
-    
+
     requestAnimationFrame(draw);
 };
 

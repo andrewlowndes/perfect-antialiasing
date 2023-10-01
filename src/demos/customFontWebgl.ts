@@ -176,7 +176,7 @@ const start = async () => {
         const aPath = myChar.getPath(charPos, 0, fontSize);
         const pointsGroups = pathToPoints(aPath.toPathData(3), splitBoundary);
 
-        charPos += (myChar.advanceWidth / 1000) * fontSize;
+        charPos += ((myChar.advanceWidth || 0) / 1000) * fontSize;
 
         const charPolygons = pointsToPolygons(pointsGroups);
 

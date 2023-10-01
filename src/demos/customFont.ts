@@ -75,7 +75,7 @@ const loadChars = () => {
         const aPath = myChar.getPath(charPos, 100, fontSize);
         const points = pathToPoints(aPath.toPathData(5), splitBoundary);
 
-        charPos += (myChar.advanceWidth / 1000) * fontWidth;
+        charPos += ((myChar.advanceWidth || 0) / 1000) * fontWidth;
 
         const charPolygons = pointsToPolygons(points);
 

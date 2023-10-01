@@ -23,8 +23,15 @@ const makeTriangle = (p1: Point, p2: Point, p3: Point): Triangle => ({
 
 const makeCell = (min: Point, size: Point): Cell => ({ min, size, max: add(min, size) });
 
-const makeTest = (min: Point, size: Point, p1: Point, p2: Point, p3: Point, offset: Point = [0, 0]): [Cell, Triangle] => [
-    makeCell(add(min, offset), size), 
+const makeTest = (
+    min: Point,
+    size: Point,
+    p1: Point,
+    p2: Point,
+    p3: Point,
+    offset: Point = [0, 0]
+): [Cell, Triangle] => [
+    makeCell(add(min, offset), size),
     makeTriangle(add(p1, offset), add(p2, offset), add(p3, offset))
 ];
 
@@ -38,7 +45,7 @@ const scaleAmount = 0.1;
 const rotateAmount = 0.01;
 
 const tests: Array<[Cell, Triangle]> = [
-    makeTest([100, 50], [50, 50], [717.01, 355.77], [816.7078, 355.76], [816.7078, 455.43]),
+    makeTest([100, 50], [50, 50], [717.01, 355.77], [816.7078, 355.76], [816.7078, 455.43])
 ];
 
 const cellStart: Point = [0, 0];
@@ -46,31 +53,90 @@ const cellSize: Point = [40, 40];
 const cellSpacing: Point = [25, 25];
 
 const triangleTests: Array<[Point, Point, Point]> = [
-    [[-10, -10], [20, 30], [50, -10]], //two out, three sides
-    [[-10, -10], [20, 10], [50, -10]], //two out, one side
-    [[-10, -10], [20, 20], [50, -10]], //diagonals intersect
-    [[-10, 0], [20, 0], [50, 0]], //degenerate, line
-    [[10, -10], [20, 20], [30, -10]], //outside, one in
-    [[10, 0], [20, 20], [30, 0]], //on edge, touch
-    [[0, 0], [20, 20], [40, 0]], //on edge, corners
-    [[-10, 0], [20, 20], [50, 0]], //on edge, overflow
-    [[-10, 0], [20, 2], [50, 0]], //on edge, overflow, tight
-    [[10, -20], [20, -20], [20, -10]], //outside, right-angle triangle
-    [[10, 20], [20, 20], [20, 10]], //inside, right-angle triangle,
-    [[0, 0], [0, 0], [0, 0]], //degenerate, point
-    [[-10, 10], [20, 50], [50, 10]], ///center, three sides
-    [[-10, 10], [20, 50], [45, -5]], ///four sides
+    [
+        [-10, -10],
+        [20, 30],
+        [50, -10]
+    ], //two out, three sides
+    [
+        [-10, -10],
+        [20, 10],
+        [50, -10]
+    ], //two out, one side
+    [
+        [-10, -10],
+        [20, 20],
+        [50, -10]
+    ], //diagonals intersect
+    [
+        [-10, 0],
+        [20, 0],
+        [50, 0]
+    ], //degenerate, line
+    [
+        [10, -10],
+        [20, 20],
+        [30, -10]
+    ], //outside, one in
+    [
+        [10, 0],
+        [20, 20],
+        [30, 0]
+    ], //on edge, touch
+    [
+        [0, 0],
+        [20, 20],
+        [40, 0]
+    ], //on edge, corners
+    [
+        [-10, 0],
+        [20, 20],
+        [50, 0]
+    ], //on edge, overflow
+    [
+        [-10, 0],
+        [20, 2],
+        [50, 0]
+    ], //on edge, overflow, tight
+    [
+        [10, -20],
+        [20, -20],
+        [20, -10]
+    ], //outside, right-angle triangle
+    [
+        [10, 20],
+        [20, 20],
+        [20, 10]
+    ], //inside, right-angle triangle,
+    [
+        [0, 0],
+        [0, 0],
+        [0, 0]
+    ], //degenerate, point
+    [
+        [-10, 10],
+        [20, 50],
+        [50, 10]
+    ], ///center, three sides
+    [
+        [-10, 10],
+        [20, 50],
+        [45, -5]
+    ] ///four sides
 ];
 
 const cellCenter = add(cellStart, scale(cellSize, 0.5));
 const numRotations = 8;
-const rotStep = Math.PI * 2.0 / numRotations;
+const rotStep = (Math.PI * 2.0) / numRotations;
 
 triangleTests.forEach((triangleTest, triangleIndex) => {
     //create tests for each rotation of a triangle
-    for (let rotateIndex=0; rotateIndex<numRotations; rotateIndex++) {
-        const [p1, p2, p3] = triangleTest.map(p => vec2.rotate(vec2.create(), p, cellCenter, rotateIndex * rotStep));
-        const offset: Point = [rotateIndex * (cellSize[0] + cellSpacing[0]) + cellSpacing[0], triangleIndex * (cellSize[1] + cellSpacing[1]) + cellSpacing[1]];
+    for (let rotateIndex = 0; rotateIndex < numRotations; rotateIndex++) {
+        const [p1, p2, p3] = triangleTest.map((p) => vec2.rotate(vec2.create(), p, cellCenter, rotateIndex * rotStep));
+        const offset: Point = [
+            rotateIndex * (cellSize[0] + cellSpacing[0]) + cellSpacing[0],
+            triangleIndex * (cellSize[1] + cellSpacing[1]) + cellSpacing[1]
+        ];
         tests.push(makeTest(cellStart, cellSize, p1, p2, p3, offset));
     }
 });
@@ -115,7 +181,7 @@ const draw = () => {
     triangle.e1 = sub(triangle.p2, triangle.p1);
     triangle.e2 = sub(triangle.p3, triangle.p2);
     triangle.e3 = sub(triangle.p1, triangle.p3);
-    
+
     //draw all of our scenarios
     for (const [cell, triangle] of tests) {
         const cellFillPolygon = intersectCellTriangle(triangle, cell);
@@ -133,9 +199,9 @@ const draw = () => {
         //draw our triangle
         g.strokeStyle = 'red';
         g.fillStyle = 'red';
-        triangle.points!.forEach(point => {
+        triangle.points!.forEach((point) => {
             g.beginPath();
-            g.arc(point[0], game.height - point[1], 0.5, 0, Math.PI*2);
+            g.arc(point[0], game.height - point[1], 0.5, 0, Math.PI * 2);
             g.fill();
         });
         g.beginPath();
@@ -145,9 +211,9 @@ const draw = () => {
         //draw our polygon
         g.strokeStyle = 'blue';
         g.fillStyle = 'blue';
-        cellFillPolygon.forEach(point => {
+        cellFillPolygon.forEach((point) => {
             g.beginPath();
-            g.arc(point[0], game.height - point[1], 0.5, 0, Math.PI*2);
+            g.arc(point[0], game.height - point[1], 0.5, 0, Math.PI * 2);
             g.fill();
         });
         g.beginPath();

@@ -3,8 +3,8 @@
 uniform vec2 screenSize;
 uniform mat4 modelViewProjection;
 
-in vec2 pos;
 in vec2 prevPos;
+in vec2 pos;
 in vec2 nextPos;
 
 flat out vec4 bounds;
